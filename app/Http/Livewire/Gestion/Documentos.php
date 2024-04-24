@@ -30,7 +30,7 @@ class Documentos extends Component
     $inafecto,$exonerado,$igv,$otrosImpuestos,$total,$totalLetras,$glosa,$numeroFile,$tipoServicio,
     $documentoReferencia,$idMotivoNC,$idMotivoND,$tipoCambio,$idEstado,$respuestaSunat,$usuarioCreacion,
     $usuarioModificacion,$numeroCompleto,$comprobante,$motivoBaja,$codigoDoc,$fechaBaja,$respSenda,
-    $startDate,$endDate,$selectedTipoDocumento,$idMedioPago,$selectedIdCliente;
+    $startDate,$endDate,$selectedTipoDocumento,$idMedioPago,$selectedIdCliente,$errorAnulacion;
 
     protected $documentos;
 
@@ -40,7 +40,11 @@ class Documentos extends Component
         $this->endDate = Carbon::parse($fechaActual)->format("Y-m-d");
         $this->startDate = $fechaActual->subDay(15)->format("Y-m-d");
         
+        $this->poblarGrid();
+        
+    }
 
+    public function poblarGrid(){
         $this->documentos = Documento::query()
             ->when($this->filtroCliente, function($query){
                 $query->where('idTipoDocumento', $this->selectedTipoDocumento);
@@ -80,6 +84,7 @@ class Documentos extends Component
         $clientes = Cliente::all()->sortBy('razonSocial');
         $medioPagos = MedioPago::all()->sortBy('descripcion');
         return view('livewire.gestion.documentos',compact('tipoDocumentos','estados','clientes','medioPagos'));
+        $this->poblarGrid();
     }
 
     public function buscarDoc(){
@@ -171,10 +176,23 @@ class Documentos extends Component
         $this->respuestaSunat = $documento->respuestaSunat;
         $this->usuarioCreacion = $documento->usuarioCreacion;
         $this->usuarioModificacion = $documento->usuarioModificacion;
+
+        $this->poblarGrid();
     }
 
     public function encontrar($id){
+        $fechaAct = Carbon::now();
         $documento = Documento::find($id);
+
+        $fechaEm = Carbon::parse($documento->fechaEmision);
+        $diferencia = $fechaAct->diffInDays($fechaEm);
+        $this->poblarGrid();
+        if($diferencia > 7){
+            $this->errorAnulacion = true;
+            session()->flash('ErrorAnulacion', 'No se puede anular, ha superado la fecha permitida por Sunat');
+            return;
+        }
+
         $this->idRegistro = $documento->id;
         $this->numero = $documento->numero;
         $this->numeroCompleto = str_pad($documento->numero,8,"0",STR_PAD_LEFT);
@@ -189,6 +207,7 @@ class Documentos extends Component
 
     public function anular(){
         $docu = Documento::find($this->idRegistro);
+
         if($docu->tipoDocumento == 36){
             $docu = Documento::find($this->idRegistro);
             $docu->idEstado = 2;
@@ -248,7 +267,15 @@ class Documentos extends Component
     }
 
     public function limpiarControles(){
-
+        $this->numero = '';
+        $this->numeroCompleto = '';
+        $this->serie = '';
+        $this->comprobante = '';
+        $this->codigoDoc = '';
+        $this->fechaBaja = '';
+        $this->errorAnulacion = false;
+        
+        $this->poblarGrid();
     }
 
     public function exportar(){

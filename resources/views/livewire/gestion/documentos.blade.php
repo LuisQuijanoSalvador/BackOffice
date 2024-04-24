@@ -1,10 +1,10 @@
 <div>
     {{-- Do your work, then step back. --}}
     @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
     <div class="div-filtro">
         <div class="row">
             <div class="col-md-8">
@@ -354,12 +354,17 @@
                         <label for="txtMotivo">Motivo de baja:</label>
                         <input type="text" name="txtMotivo" id="txtMotivo" wire:model.laze.defer="motivoBaja" style="text-transform:uppercase; width:100%;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                     </div>
+                    @if(session('ErrorAnulacion'))
+                        <div class="alert alert-danger">
+                            {{ session('ErrorAnulacion') }}
+                        </div>
+                    @endif
     
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click='limpiarControles'>Cancelar</button>
                     {{-- <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @if($idUsuario==0) wire:click='grabar' @else wire:click='actualizar("{{$idUsuario}}")' @endif>Aceptar</button> --}}
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal"  wire:click='anular("{{$idRegistro}}")'>Aceptar</button>
+                    <button @if ($this->errorAnulacion) disabled @endif type="button" class="btn btn-danger" data-bs-dismiss="modal"  wire:click='anular("{{$idRegistro}}")'>Aceptar</button>
                 </div>
             </div>
         </div>

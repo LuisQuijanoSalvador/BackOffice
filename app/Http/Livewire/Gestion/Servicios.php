@@ -259,7 +259,7 @@ class Servicios extends Component
         $tipoServicios = TipoServicio::all()->sortBy('descripcion');
         $areas = Area::all()->sortBy('descripcion');
         $vendedors = Vendedor::all()->sortBy('nombre');
-        $proveedors = Proveedor::where('esConsolidador',0)->get();
+        $proveedors = Proveedor::all()->sortBy('razonSocial');
         $tipoPasajeros = TipoPasajero::all()->sortBy('descripcion');
         //ToDo: Agregar Documentos
         $monedas = moneda::all()->sortBy('codigo');

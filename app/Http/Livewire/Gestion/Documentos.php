@@ -84,7 +84,7 @@ class Documentos extends Component
         $clientes = Cliente::all()->sortBy('razonSocial');
         $medioPagos = MedioPago::all()->sortBy('descripcion');
         return view('livewire.gestion.documentos',compact('tipoDocumentos','estados','clientes','medioPagos'));
-        $this->poblarGrid();
+        
     }
 
     public function buscarDoc(){

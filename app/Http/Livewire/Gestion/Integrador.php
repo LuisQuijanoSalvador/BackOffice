@@ -257,7 +257,7 @@ class Integrador extends Component
         $boleto->idTipoDocumento = 6;
         $boleto->idArea = $this->idArea;
         $boleto->idVendedor = 1;
-        $boleto->idConsolidador = 1;
+        $boleto->idConsolidador = 9;
         $boleto->codigoReserva = $this->codigoReserva;
         $boleto->fechaReserva = $this->fechaEmision;
         $boleto->idGds = $this->idGds;

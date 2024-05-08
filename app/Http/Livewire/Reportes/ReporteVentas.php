@@ -37,13 +37,6 @@ class ReporteVentas extends Component
                             ->orderBy('pasajero')
                             ->orderBy('tipo')
                             ->get();
-            // $this->ventas = Ventas::whereBetween('fechaEmision', [$this->fechaInicio, $this->fechaFin])
-            //                  ->when($this->idCliente, function ($query) {
-            //                      return $query->where('idCliente', $this->idCliente);
-            //                  })
-            //                  ->orderby('Origen')
-            //                  ->orderby('FechaEmision')
-            //                  ->get();
         }
         if($this->fechaInicio and $this->fechaFin and !$this->idCliente){
             $this->ventas = DB::table('vista_ventas')
@@ -52,10 +45,6 @@ class ReporteVentas extends Component
                             ->orderBy('pasajero')
                             ->orderBy('tipo')
                             ->get();
-            // $this->ventas = Ventas::whereBetween('fechaEmision', [$this->fechaInicio, $this->fechaFin])
-            //                 ->orderby('Origen')
-            //                 ->orderby('FechaEmision')
-            //                 ->get();
         }
     }
 

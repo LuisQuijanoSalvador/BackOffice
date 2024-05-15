@@ -187,11 +187,14 @@ class Documentos extends Component
         $fechaEm = Carbon::parse($documento->fechaEmision);
         $diferencia = $fechaAct->diffInDays($fechaEm);
         $this->poblarGrid();
-        if($diferencia > 7){
-            $this->errorAnulacion = true;
-            session()->flash('ErrorAnulacion', 'No se puede anular, ha superado la fecha permitida por Sunat');
-            return;
+        if($documento->tipoDocumento <> 36){
+            if($diferencia > 7){
+                $this->errorAnulacion = true;
+                session()->flash('ErrorAnulacion', 'No se puede anular, ha superado la fecha permitida por Sunat');
+                return;
+            }
         }
+        
 
         $this->idRegistro = $documento->id;
         $this->numero = $documento->numero;

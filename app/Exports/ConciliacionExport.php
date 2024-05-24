@@ -53,7 +53,7 @@ class ConciliacionExport implements FromView, WithStyles
                 ],
             ],
         ]);
-        $sheet->getStyle('A4:K4')->applyFromArray([
+        $sheet->getStyle('A4:L4')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'size' => '9',

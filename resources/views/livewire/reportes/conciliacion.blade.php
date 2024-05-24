@@ -56,6 +56,9 @@
                     <th scope="col" class="py-1">
                         PASAJERO
                     </th>
+                    <th scope="col" class="py-1">
+                        COD4
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -73,6 +76,7 @@
                             <td class="py-1">{{$venta->XM}}</td>
                             <td class="py-1">{{$venta->total}}</td>
                             <td class="py-1">{{$venta->pasajero}}</td>
+                            <td class="py-1">{{$venta->cod4}}</td>
                         </tr>
                     @endforeach
                 @endif

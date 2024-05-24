@@ -55,6 +55,9 @@
             <th scope="col">
                 PASAJERO
             </th>
+            <th scope="col">
+                COD4
+            </th>
         </tr>
     </thead>
     <tbody>
@@ -72,21 +75,9 @@
                     <td class="py-1">{{$venta->XM}}</td>
                     <td class="py-1">{{$venta->total}}</td>
                     <td class="py-1">{{$venta->pasajero}}</td>
+                    <td class="py-1">{{$venta->cod4}}</td>
                 </tr>
             @endforeach
-            <tr style="border: 1px solid #000000;">
-                <td>AAA</td>
-                <td>SSSS</td>
-                <td>DDDDD</td>
-                <td>FFFFFF</td>
-                <td>GGGGGG</td>
-                <td>WWWW</td>
-                <td>EEEEEE</td>
-                <td>RRRRR</td>
-                <td>TTTT</td>
-                <td>TTTT</td>
-                <td>DDDDDD</td>
-            </tr>
         @endif
     </tbody>
 </table>

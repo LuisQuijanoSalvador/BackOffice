@@ -212,7 +212,7 @@ class Integrador extends Component
                 $neto = substr($linea,$posTNeta+9,7);
                 $this->tarifaNeta = $neto;
             }
-            $posTax = strpos($linea,"TAX:");
+            $posTax = strpos($linea,"TAX: USD");
             if ($posTax !== false) {
                 $tax = substr($linea,$posTax+8,7);
                 $this->otrosImpuestos = $tax;
@@ -232,6 +232,33 @@ class Integrador extends Component
         }
         $this->tarifaNeta = $this->tarifaNeta + $this->yr;
         $this->otrosImpuestos = $this->otrosImpuestos - $this->igv - $this->yr;
+
+        // Obtener Rutas detalle
+        $patron = '/-{10,}\s*(.*?)\s*ENDORSEMENTS:/s';
+        // $patron = '/NAME REF:\s*(.*?)\s*ENDORSEMENTS:/s';
+
+        if (preg_match($patron, $this->boleto, $coincidencias)) {
+            $seccion_deseada = trim($coincidencias[1]);
+            // Ahora puedes guardar $seccion_deseada en tu tabla "boletos"
+            // como el valor del campo "rutas"
+            // dd($seccion_deseada);
+        } 
+        // else {
+        //     echo "No se encontró la sección deseada.";
+        // }
+
+        // Obtener Segmentos
+        // for ($i=0; $i < count($boleto)-1; $i++) { 
+        //     $posFecha = strpos($boleto[i],"DATE  AIRLINE              FLT    CLASS     FARE BASIS      STATUS");
+        //     $posVuelo = strpos($boleto[i],"FLT    CLASS     FARE BASIS      STATUS");
+        //     $posClase = strpos($boleto[i],"CLASS     FARE BASIS      STATUS");
+        //     $posFareBasis = strpos($boleto[i],"FARE BASIS      STATUS");
+        //     if($posPasajero !== false){
+        //         $this->pasajero = str_replace(" ","",$linea);
+        //         $this->pasajero = str_replace("NAME:","",$this->pasajero);
+        //         $this->pasajero = str_replace("/"," ",$this->pasajero);
+        //     }
+        // }
         
         $this->grabarBoleto();
         // dd($this->idAerolinea);

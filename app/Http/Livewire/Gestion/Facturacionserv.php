@@ -33,7 +33,7 @@ class Facturacionserv extends Component
     public $idRegistro,$idMoneda=1,$tipoCambio,$fechaEmision,$detraccion=0,$glosa="",$descripcion="",$idCliente,
             $tipoDocumentoIdentidad,$codigoDocumentoIdentidad,$descDocumentoIdentidad,$monedaLetra,$respSenda,
             $numeroTelefono,$chkMedioPago,$idMedioPagoCambio,$idMedioPago,$metodo_pago, $codigo_metodopago, 
-            $desc_metodopago,$totalNeto = 0,$totalInafecto = 0,$totalIGV = 0,$totalOtrosImpuestos = 0,
+            $desc_metodopago, $centroCosto, $totalNeto = 0,$totalInafecto = 0,$totalIGV = 0,$totalOtrosImpuestos = 0,
             $totalTotal = 0, $startDate, $endDate;
     protected $servicios=[];
 
@@ -159,6 +159,12 @@ class Facturacionserv extends Component
             $this->monedaLetra = 'DOLARES AMERICANOS';
         } elseif($dataServicio->tMoneda->codigo == 'PEN'){
             $this->monedaLetra = 'SOLES';
+        }
+
+        if($dataServicio->centroCosto){
+            $this->centroCosto = $dataServicio->centroCosto;
+        }else{
+            $this->centroCosto = '';
         }
 
         $servicioPago = ServicioPago::where('idServicio',$dataServicio->id)->first();
@@ -345,6 +351,7 @@ class Facturacionserv extends Component
         $this->metodo_pago = NULL;
         $this->codigo_metodopago = NULL;
         $this->desc_metodopago = NULL;
+        $this->centroCosto = NULL;
         $this->totalNeto = 0;
         $this->totalInafecto = 0;
         $this->totalIGV = 0;
@@ -459,7 +466,7 @@ class Facturacionserv extends Component
                 "caja"=> "",
                 "cajero"=> "",
                 "nro_transaccion"=> "",
-                "orden_compra"=> "",
+                "orden_compra"=> $this->centroCosto,
                 "glosa"=> $comprobante->numeroFile,
                 "glosa_refe"=> "",
                 "glosa_pie_pagina"=> $this->glosa,
@@ -626,7 +633,7 @@ class Facturacionserv extends Component
                 "caja"=> "",
                 "cajero"=> "",
                 "nro_transaccion"=> "",
-                "orden_compra"=> "",
+                "orden_compra"=> $this->centroCosto,
                 "glosa"=> $comprobante->numeroFile,
                 "glosa_refe"=> "",
                 "glosa_pie_pagina"=> $this->glosa,
@@ -841,7 +848,7 @@ class Facturacionserv extends Component
                 "caja"=> "",
                 "cajero"=> "",
                 "nro_transaccion"=> "",
-                "orden_compra"=> "",
+                "orden_compra"=> $this->centroCosto,
                 "glosa"=> $comprobante->numeroFile,
                 "glosa_refe"=> "",
                 "glosa_pie_pagina"=> $this->glosa,
@@ -1004,7 +1011,7 @@ class Facturacionserv extends Component
                 "totalpagado_efectivo"=> "0.00",
                 "vuelto"=> "0.00",
                 "file_nro"=> $comprobante->numeroFile,
-                "centro_costo"=> "",
+                "centro_costo"=> $this->centroCosto,
                 "nro_pedido"=> "",
                 "local"=> "",
                 "caja"=> "",
@@ -1220,7 +1227,7 @@ class Facturacionserv extends Component
                 "totalpagado_efectivo"=> "0.00",
                 "vuelto"=> "0.00",
                 "file_nro"=> $comprobante->numeroFile,
-                "centro_costo"=> "",
+                "centro_costo"=> $this->centroCosto,
                 "nro_pedido"=> "",
                 "local"=> "",
                 "caja"=> "",
@@ -1400,7 +1407,7 @@ class Facturacionserv extends Component
                 "caja"=> "",
                 "cajero"=> "",
                 "nro_transaccion"=> "",
-                "orden_compra"=> "",
+                "orden_compra"=> $this->centroCosto,
                 "glosa"=> $comprobante->numeroFile,
                 "glosa_refe"=> "",
                 "glosa_pie_pagina"=> $this->glosa,

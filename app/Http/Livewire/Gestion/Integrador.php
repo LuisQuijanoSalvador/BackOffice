@@ -16,6 +16,7 @@ use App\Models\Area;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use App\Clases\Funciones;
+use Illuminate\Support\Collection;
 use DateTime;
 
 class Integrador extends Component
@@ -29,13 +30,16 @@ class Integrador extends Component
     $otrosImpuestos=0,$yr=0,$hw=0,$xm=0,$total=0,$totalOrigen=0,$porcentajeComision,$montoComision=0,
     $descuentoCorporativo,$codigoDescCorp,$tarifaNormal,$tarifaAlta,$tarifaBaja,
     $idTipoPagoConsolidador,$centroCosto,$cod1,$cod2,$cod3,$cod4,$observaciones,$estado=1,
-    $usuarioCreacion,$fechaCreacion,$usuarioModificacion,$fechaModificacion,$checkFile;
+    $usuarioCreacion,$fechaCreacion,$usuarioModificacion,$fechaModificacion,$checkFile, $detalleRutas;
 
     public $ciudadSalida,$ciudadLlegada,$idAerolineaRuta,$vuelo,$clase,$fechaSalida,$horaSalida,$fechaLlegada,
-            $horaLlegada,$farebasis;
+            $horaLlegada,$farebasis, $boletoRutas;
 
     public $idMedioPago,$idTarjetaCredito,$numeroTarjeta,$monto,$fechaVencimientoTC,$boletoPagos;
 
+    public function mount(){
+        $this->boletoRutas = new Collection();
+    }
     public function render()
     { 
         $counters = Counter::all()->sortBy('nombre');
@@ -239,30 +243,76 @@ class Integrador extends Component
 
         if (preg_match($patron, $this->boleto, $coincidencias)) {
             $seccion_deseada = trim($coincidencias[1]);
-            // Ahora puedes guardar $seccion_deseada en tu tabla "boletos"
-            // como el valor del campo "rutas"
-            // dd($seccion_deseada);
+            $this->detalleRutas = $seccion_deseada;
         } 
         // else {
         //     echo "No se encontró la sección deseada.";
         // }
 
         // Obtener Segmentos
-        // for ($i=0; $i < count($boleto)-1; $i++) { 
-        //     $posFecha = strpos($boleto[i],"DATE  AIRLINE              FLT    CLASS     FARE BASIS      STATUS");
-        //     $posVuelo = strpos($boleto[i],"FLT    CLASS     FARE BASIS      STATUS");
-        //     $posClase = strpos($boleto[i],"CLASS     FARE BASIS      STATUS");
-        //     $posFareBasis = strpos($boleto[i],"FARE BASIS      STATUS");
-        //     if($posPasajero !== false){
-        //         $this->pasajero = str_replace(" ","",$linea);
-        //         $this->pasajero = str_replace("NAME:","",$this->pasajero);
-        //         $this->pasajero = str_replace("/"," ",$this->pasajero);
-        //     }
-        // }
+        $anio = date('Y');
+        $posFecha2 = 1;
+        $posVuelo2 = 1;
+        $posClase2 = 1;
+        $posFareBasis2 = 1;
+        for ($i=0; $i < count($boleto)-1; $i++) { 
+            $posFecha = strpos($boleto[$i],"DATE  AIRLINE              FLT    CLASS     FARE BASIS      STATUS");
+            $posVuelo = strpos($boleto[$i],"FLT    CLASS     FARE BASIS      STATUS");
+            $posClase = strpos($boleto[$i],"CLASS     FARE BASIS      STATUS");
+            $posFareBasis = strpos($boleto[$i],"FARE BASIS      STATUS");
+            if($posFecha !== false){
+                $posFecha2 = $posFecha;
+                $posVuelo2 = $posVuelo;
+                $posClase2 = $posClase;
+                $posFareBasis2 = $posFareBasis;
+            }
+        }    
+        for ($i=0; $i < count($boleto)-1; $i++) { 
+            $posConfirmed = strpos($boleto[$i],"        CONFIRMED");
+            if($posConfirmed !== false){
+                $date = substr($boleto[$i],$posFecha2,5) . $anio;
+                $date2 = $this->formatearFecha($date);
+                $flt = substr($boleto[$i],$posVuelo2,4);
+                $fareBasis = substr($boleto[$i],$posFareBasis2,8);
+                $class = substr($boleto[$i],$posFareBasis2,1);
+                $lv = rtrim(substr($boleto[$i+1],16,18));
+                $horaSalida = rtrim(substr($boleto[$i+1],39,4));
+                $ar = rtrim(substr($boleto[$i+2],16,18));
+                $horaLlegada = rtrim(substr($boleto[$i+2],39,4));
+                // dd($date2);
+                $this->boletoRutas->add(array(
+                    'ciudadSalida' =>  $lv,
+                    'ciudadLlegada' =>  $ar,
+                    'idAerolinea' =>  (int)$this->idAerolinea,
+                    'vuelo' =>  $flt,
+                    'clase' =>  $class,
+                    'fechaSalida' =>  $date2,
+                    'horaSalida' =>  $horaSalida,
+                    'fechaLlegada' =>  $date2,
+                    'horaLlegada' =>  $horaLlegada,
+                    'farebasis' =>  $fareBasis
+                ));
+            }
+        }
+        // dd($this->boletoRutas);
         
         $this->grabarBoleto();
         // dd($this->idAerolinea);
     }
+
+    public function formatearFecha($fecha){
+        // Fecha en formato "21MAY24"
+        $fecha_original = $fecha;
+
+        // Crear un objeto Carbon a partir de la fecha original
+        $fecha_objeto = Carbon::createFromFormat('dMY', $fecha_original);
+
+        // Formatear la fecha en el nuevo formato "YYYY-MM-DD"
+        $fecha_formateada = $fecha_objeto->format('Y-m-d');
+
+        // Mostrar la fecha formateada
+        return $fecha_formateada; // Salida: 2024-05-21
+    }   
 
     public function grabarBoleto(){
         $area = Area::find($this->idArea);
@@ -320,10 +370,12 @@ class Integrador extends Component
         $boleto->cod3 = ' ';
         $boleto->cod4 = ' ';
         $boleto->observaciones = ' ';
+        $boleto->detalleRutas = $this->detalleRutas;
         $boleto->estado = 1;
         $boleto->usuarioCreacion = auth()->user()->id;
         $boleto->save();
         $this->grabarPagosSabre($boleto->id);
+        $this->grabarRutas($boleto->id, $this->boletoRutas);
         try {
             // $boleto->save();
             // $this->grabarRutasSabre1($boleto->id);
@@ -1016,22 +1068,24 @@ class Integrador extends Component
         $boletoPago->save();
     }
 
-    public function grabarRutasSabre1($idBoleto){
-        $boletoRuta = new BoletoRuta();
-        $boletoRuta->idBoleto = $idBoleto;
-        $boletoRuta->idAerolinea = 2;
-        $boletoRuta->ciudadSalida = 'BOG';
-        $boletoRuta->ciudadLlegada = 'LIM';
-        $boletoRuta->vuelo = '75';
-        $boletoRuta->clase = 'E';
-        $boletoRuta->fechaSalida = '2023-09-20';
-        $boletoRuta->horaSalida = '2130';
-        $boletoRuta->fechaLlegada = '2023-09-20';
-        $boletoRuta->horaLlegada = '0040';
-        $boletoRuta->farebasis = 'EEOB2BRG';
-        $boletoRuta->idEstado = 1;
-        $boletoRuta->usuarioCreacion = auth()->user()->id;
-        $boletoRuta->save();
+    public function grabarRutas($idBoleto, $rutas){
+        foreach($rutas as $item){
+            BoletoRuta::create([
+                'idBoleto' => $idBoleto,
+                'ciudadSalida' => $item['ciudadSalida'],
+                'ciudadLlegada' => $item['ciudadLlegada'],
+                'idAerolinea' => $item['idAerolinea'],
+                'vuelo' => $item['vuelo'],
+                'clase' => $item['clase'],
+                'fechaSalida' => $item['fechaSalida'],
+                'horaSalida' => $item['horaSalida'],
+                'fechaLlegada' => $item['fechaLlegada'],
+                'horaLlegada' => $item['horaLlegada'],
+                'farebasis' => $item['farebasis'],
+                'idEstado' => 1,
+                'usuarioCreacion' => auth()->user()->id
+            ]);
+        }
     }
     public function grabarRutasSabre2($idBoleto){
         $boletoRuta = new BoletoRuta();

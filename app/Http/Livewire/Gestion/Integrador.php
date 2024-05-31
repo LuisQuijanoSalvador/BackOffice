@@ -295,7 +295,7 @@ class Integrador extends Component
             }
         }
         // dd($this->boletoRutas);
-        
+        $this->idGds = 1;
         $this->grabarBoleto();
         // dd($this->idAerolinea);
     }

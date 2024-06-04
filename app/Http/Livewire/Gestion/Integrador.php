@@ -1047,10 +1047,55 @@ class Integrador extends Component
                 // dd($boleto[$i]);
             }
         }
-        // dd('No hizo ni mergas');
+        $anio = date('Y');
+        for ($i=0; $i < count($boleto)-1; $i++) { 
+            $posOperado = strpos($boleto[$i],"Operado por");
+            if ($posOperado !== false){
+                $linea = $boleto[$i-2];
+                $lineaFare = $boleto[$i-1];
+                $segmento = explode(' ',$linea);
+                $segmentoFare = explode(' ',$lineaFare);
+                $date1 = $this->formatearFecha($segmento[4] . $anio);
+                $date2 = $this->formatearFecha($segmento[8] . $anio);
+                $this->boletoRutas->add(array(
+                    'ciudadSalida' =>  $segmento[0],
+                    'ciudadLlegada' =>  $segmento[1],
+                    'idAerolinea' =>  (int)$this->idAerolinea,
+                    'vuelo' =>  $segmento[2],
+                    'clase' =>  $segmento[3],
+                    'fechaSalida' =>  $date1,
+                    'horaSalida' =>  Str::remove(':',$segmento[5]),
+                    'fechaLlegada' =>  $date2,
+                    'horaLlegada' =>  Str::remove(':',$segmento[6]),
+                    'farebasis' =>  $segmentoFare[count($segmentoFare) - 1]
+                ));
+            }
+
+            $posOperado = strpos($boleto[$i],"Operated by");
+            if ($posOperado !== false){
+                $linea = $boleto[$i-2];
+                $lineaFare = $boleto[$i-1];
+                $segmento = explode(' ',$linea);
+                $segmentoFare = explode(' ',$lineaFare);
+                $date1 = $this->formatearFecha($segmento[4] . $anio);
+                $date2 = $this->formatearFecha($segmento[8] . $anio);
+                $this->boletoRutas->add(array(
+                    'ciudadSalida' =>  $segmento[0],
+                    'ciudadLlegada' =>  $segmento[1],
+                    'idAerolinea' =>  (int)$this->idAerolinea,
+                    'vuelo' =>  $segmento[2],
+                    'clase' =>  $segmento[3],
+                    'fechaSalida' =>  $date1,
+                    'horaSalida' =>  Str::remove(':',$segmento[5]),
+                    'fechaLlegada' =>  $date2,
+                    'horaLlegada' =>  Str::remove(':',$segmento[6]),
+                    'farebasis' =>  $segmentoFare[count($segmentoFare) -1]
+                ));
+            }
+        }
+        
         $this->idGds = 4;
         $this->grabarBoleto();
-        // dd($this->idAerolinea);
     }
 
     public function grabarRutasNdc1($idBoleto){

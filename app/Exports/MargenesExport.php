@@ -53,7 +53,7 @@ class MargenesExport implements FromView, WithStyles
                 ],
             ],
         ]);
-        $sheet->getStyle('A4:I4')->applyFromArray([
+        $sheet->getStyle('A4:K4')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'size' => '9',

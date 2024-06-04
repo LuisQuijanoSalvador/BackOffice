@@ -26,6 +26,12 @@
                 CLIENTE
             </th>
             <th scope="col">
+                PASAJERO
+            </th>
+            <th scope="col">
+                DOCUMENTO
+            </th>
+            <th scope="col">
                 COUNTER
             </th>
             <th scope="col">
@@ -48,6 +54,8 @@
                     <td class="py-1">{{$margen->NumeroBoleto}}</td>
                     <td class="py-1">{{$margen->FILE}}</td>
                     <td class="py-1">{{$margen->Cliente}}</td>
+                    <td class="py-1">{{$margen->Pasajero}}</td>
+                    <td class="py-1">{{$margen->Documento}}</td>
                     <td class="py-1">{{$margen->Counter}}</td>
                     <td class="py-1">{{\Carbon\Carbon::parse($margen->FechaEmision)->format('d-m-Y')}}</td>
                     <td class="py-1">{{$margen->Ruta}}</td>

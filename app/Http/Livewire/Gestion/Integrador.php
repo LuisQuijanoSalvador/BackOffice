@@ -386,6 +386,7 @@ class Integrador extends Component
             session()->flash('error', 'Ocurrió un error intentando grabar.');
         }
     }
+
     public function parsearKiu($boleto){
         $contador = 0;
         if (count($boleto) < 5) {
@@ -549,6 +550,56 @@ class Integrador extends Component
             // dd($this->tipoRuta);
         }
         $this->otrosImpuestos = $this->hw;
+
+        // Obtener Segmentos
+        $anio = date('Y');
+        $posDesde2 = 1;
+        $posFecha2 = 1;
+        $posVuelo2 = 1;
+        $posClase2 = 1;
+        $posFareBasis2 = 1;
+        for ($i=0; $i < count($boleto)-1; $i++) { 
+            $posDesde = strpos($boleto[$i],"FROM/TO     FLIGHT CL DATE  DEP  ARR  FARE BASIS      NVB   NVA   BAG  ST");
+            $posVuelo = strpos($boleto[$i],"FLIGHT CL DATE  DEP  ARR  FARE BASIS      NVB   NVA   BAG  ST");
+            $posClase = strpos($boleto[$i],"CL DATE  DEP  ARR  FARE BASIS      NVB   NVA   BAG  ST");
+            $posFecha = strpos($boleto[$i],"DATE  DEP  ARR  FARE BASIS      NVB   NVA   BAG  ST");
+            $posFareBasis = strpos($boleto[$i],"FARE BASIS      NVB   NVA   BAG  ST");
+            if($posFecha !== false){
+                $posDesde2 = $posDesde;
+                $posFecha2 = $posFecha;
+                $posVuelo2 = $posVuelo;
+                $posClase2 = $posClase;
+                $posFareBasis2 = $posFareBasis;
+            }
+        }    
+        for ($i=0; $i < count($boleto)-1; $i++) { 
+            $posConfirmed = strpos($boleto[$i],"15K  OK ");
+            if($posConfirmed !== false){
+                $date = trim(substr($boleto[$i],$posFecha2,5)) . $anio;
+                $date2 = $this->formatearFecha($date);
+                $flt = substr($boleto[$i],$posVuelo2,6);
+                $fareBasis = substr($boleto[$i],$posFareBasis2,3);
+                $class = substr($boleto[$i],$posClase2,1);
+                $lv = rtrim(substr($boleto[$i],$posDesde2,12));
+                $horaSalida = rtrim(substr($boleto[$i],$posFecha2+6,4));
+                $ar = rtrim(substr($boleto[$i+1],$posDesde2,12));
+                $horaLlegada = rtrim(substr($boleto[$i],$posFecha2+11,4));
+                $this->boletoRutas->add(array(
+                    'ciudadSalida' =>  $lv,
+                    'ciudadLlegada' =>  $ar,
+                    'idAerolinea' =>  (int)$this->idAerolinea,
+                    'vuelo' =>  $flt,
+                    'clase' =>  $class,
+                    'fechaSalida' =>  $date2,
+                    'horaSalida' =>  $horaSalida,
+                    'fechaLlegada' =>  $date2,
+                    'horaLlegada' =>  $horaLlegada,
+                    'farebasis' =>  $fareBasis
+                ));
+            }
+        }
+        // dd($this->boletoRutas);
+        $this->idGds = 2;
         
         $this->grabarBoleto();
         // dd($this->idAerolinea);
@@ -699,7 +750,35 @@ class Integrador extends Component
             // // dd($this->tipoRuta);
         }
         $this->otrosImpuestos = $this->hw;
-        
+
+        // Obtener Rutas detalle
+        // $patron = '/-{10,}\s*(.*?)\s*ENDORSEMENTS:/s';
+        $patron = '/Flight number\s*(.*?)\s*PAYMENT METHOD:/s';
+
+        if (preg_match($patron, $this->boleto, $coincidencias)) {
+            $seccion_deseada = trim($coincidencias[1]);
+
+            $detalleR = explode("\n",$seccion_deseada);
+            array_shift($detalleR);
+            array_pop($detalleR);
+            foreach ($detalleR as $linea) {
+                $segmento = explode(' ',$linea);
+                $this->boletoRutas->add(array(
+                    'ciudadSalida' =>  $segmento[1],
+                    'ciudadLlegada' =>  $segmento[2],
+                    'idAerolinea' =>  (int)$this->idAerolinea,
+                    'vuelo' =>  $segmento[0],
+                    'clase' =>  substr($segmento[7],0,1),
+                    'fechaSalida' =>  DateTime::createFromFormat('d/m/y', $segmento[3])->format('Y-m-d'),
+                    'horaSalida' =>  Str::remove(':',$segmento[4]),
+                    'fechaLlegada' =>  DateTime::createFromFormat('d/m/y', $segmento[5])->format('Y-m-d'),
+                    'horaLlegada' =>  Str::remove(':',$segmento[6]),
+                    'farebasis' =>  $segmento[7]
+                ));
+            }
+        } 
+
+        $this->idGds = 1;
         $this->grabarBoleto();
         // dd($this->idAerolinea);
     }

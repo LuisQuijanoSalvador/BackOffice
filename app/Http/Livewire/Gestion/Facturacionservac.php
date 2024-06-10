@@ -33,7 +33,7 @@ class Facturacionservac extends Component
     public $idRegistro,$idMoneda=1,$tipoCambio,$fechaEmision,$detraccion=0,$glosa="",$monedaLetra,$idCliente,
             $startDate,$endDate,$totalNeto = 0,$totalInafecto = 0,$totalIGV = 0,$totalOtrosImpuestos = 0,
             $totalTotal = 0,$respSenda,$descripcion="",$numeroTelefono,$chkMedioPago,$idMedioPagoCambio,
-            $idMedioPago, $metodo_pago, $codigo_metodopago, $desc_metodopago,$centroCosto;
+            $idMedioPago, $metodo_pago, $codigo_metodopago, $desc_metodopago,$centroCosto, $cod01;
     protected $servicios=[];
 
     public $selectedRows = [];
@@ -176,6 +176,11 @@ class Facturacionservac extends Component
             $this->centroCosto = $dataServicio->centroCosto;
         }else{
             $this->centroCosto = '';
+        }
+        if($dataServicio->cod01){
+            $this->cod01 = $dataServicio->cod01;
+        }else{
+            $this->cod01 = '';
         }
 
         $servicioPago = ServicioPago::where('idServicio',$dataServicio->id)->first();
@@ -416,13 +421,13 @@ class Facturacionservac extends Component
                 "totalpagado_efectivo"=> "0.00",
                 "vuelto"=> "0.00",
                 "file_nro"=> $comprobante->numeroFile,
-                "centro_costo"=> "",
+                "centro_costo"=> $this->centroCosto,
                 "nro_pedido"=> "",
                 "local"=> "",
                 "caja"=> "",
                 "cajero"=> "",
                 "nro_transaccion"=> "",
-                "orden_compra"=> $this->centroCosto,
+                "orden_compra"=> $this->cod01,
                 "glosa"=> $comprobante->numeroFile,
                 "glosa_refe"=> "",
                 "glosa_pie_pagina"=> $this->glosa,
@@ -581,13 +586,13 @@ class Facturacionservac extends Component
                 "totalpagado_efectivo"=> "0.00",
                 "vuelto"=> "0.00",
                 "file_nro"=> $comprobante->numeroFile,
-                "centro_costo"=> "",
+                "centro_costo"=> $this->centroCosto,
                 "nro_pedido"=> "",
                 "local"=> "",
                 "caja"=> "",
                 "cajero"=> "",
                 "nro_transaccion"=> "",
-                "orden_compra"=> $this->centroCosto,
+                "orden_compra"=> $this->cod01,
                 "glosa"=> $comprobante->numeroFile,
                 "glosa_refe"=> "",
                 "glosa_pie_pagina"=> $this->glosa,

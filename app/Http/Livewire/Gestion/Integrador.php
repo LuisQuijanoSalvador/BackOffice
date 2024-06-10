@@ -573,12 +573,12 @@ class Integrador extends Component
             }
         }    
         for ($i=0; $i < count($boleto)-1; $i++) { 
-            $posConfirmed = strpos($boleto[$i],"15K  OK ");
+            $posConfirmed = strpos($boleto[$i],"  OK ");
             if($posConfirmed !== false){
                 $date = trim(substr($boleto[$i],$posFecha2,5)) . $anio;
                 $date2 = $this->formatearFecha($date);
                 $flt = substr($boleto[$i],$posVuelo2,6);
-                $fareBasis = substr($boleto[$i],$posFareBasis2,3);
+                $fareBasis = substr($boleto[$i],$posFareBasis2,5);
                 $class = substr($boleto[$i],$posClase2,1);
                 $lv = rtrim(substr($boleto[$i],$posDesde2,12));
                 $horaSalida = rtrim(substr($boleto[$i],$posFecha2+6,4));

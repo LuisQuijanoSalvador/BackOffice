@@ -18,6 +18,8 @@ use Illuminate\Support\Str;
 use App\Clases\Funciones;
 use Illuminate\Support\Collection;
 use DateTime;
+use App\Models\File;
+use App\Models\FileDetalle;
 
 class Integrador extends Component
 {
@@ -25,7 +27,7 @@ class Integrador extends Component
     public $idRegistro,$numeroBoleto,$numeroFile,$fechaEmision,$idCliente,
     $idTipoFacturacion,$idTipoDocumento=6,$idArea=1,$idVendedor,$idConsolidador=2,$codigoReserva,
     $fechaReserva,$idGds=2,$idTipoTicket=1,$tipoRuta="NACIONAL",$tipoTarifa="NORMAL",$idAerolinea=7,
-    $origen="BSP",$pasajero,
+    $origen="BSP",$pasajero,$bookingAgent,
     $idTipoPasajero=1,$ruta,$destino,$idDocumento,$tipoCambio,$idMoneda=2,$tarifaNeta=0,$igv=0,
     $otrosImpuestos=0,$yr=0,$hw=0,$xm=0,$total=0,$totalOrigen=0,$porcentajeComision,$montoComision=0,
     $descuentoCorporativo,$codigoDescCorp,$tarifaNormal,$tarifaAlta,$tarifaBaja,
@@ -48,6 +50,10 @@ class Integrador extends Component
     }
 
     public function obtenerBoleto(){
+        if($this->checkFile and !$this->numeroFile){
+            session()->flash('error', 'Debe Ingresar Numero de File.');
+            return;
+        }
         $lineas = explode("\n",$this->boleto);
         $lineasBoleto = array_values($lineas);
         if ($this->selectedGds == 'sabre') {
@@ -99,6 +105,12 @@ class Integrador extends Component
                 $this->codigoReserva = substr($linea,$posPnr+19,6);
             }
 
+            //Obtener Emisor
+            $posPnr = strpos($linea,"BOOKING AGENT:");
+            if ($posPnr !== false) {
+                $this->bookingAgent = substr($linea,$posPnr+15,7);
+            }
+
             //Obtener Fecha de Emision
             $posFechaEmision = strpos($linea,"DATE OF ISSUE:");
             if ($posFechaEmision !== false) {
@@ -124,7 +136,7 @@ class Integrador extends Component
                     if ($oCliente) {
                         $this->idCliente = $oCliente->id;
                         $this->idTipoFacturacion = $oCliente->tipoFacturacion;
-                        $this->idArea = $oCliente->area;
+                        // $this->idArea = $oCliente->area;
                         $this->idVendedor = $oCliente->vendedor;
                     }
                 }else{
@@ -133,7 +145,7 @@ class Integrador extends Component
                     if ($oCliente) {
                         $this->idCliente = $oCliente->id;
                         $this->idTipoFacturacion = $oCliente->tipoFacturacion;
-                        $this->idArea = $oCliente->area;
+                        // $this->idArea = $oCliente->area;
                         $this->idVendedor = $oCliente->vendedor;
                     }
                 }
@@ -143,6 +155,7 @@ class Integrador extends Component
             $posRuta = strpos($linea,"FARE CALC:");
             if ($posRuta !== false) {
                 $cadena = Str::remove(range(0,9),$linea);
+                $cadena = Str::remove("ROE",$cadena);
                 $cadena = Str::remove("USD",$cadena);
                 $cadena = Str::remove("END",$cadena);
                 // $cadena = Str::remove(".",$cadena);
@@ -314,6 +327,42 @@ class Integrador extends Component
         return $fecha_formateada; // Salida: 2024-05-21
     }   
 
+    public function crearFile($boleto){
+        $fechaActual = Carbon::now();
+        if(!$this->checkFile and !$this->numeroFile){
+            $file = new File();
+            $file->numeroFile = $boleto->numeroFile;
+            $file->idArea = $boleto->idArea;
+            $file->idCliente = $boleto->idCliente;
+            $file->descripcion = $boleto->ruta;
+            $file->totalPago = 0;
+            $file->totalCobro = 0;
+            $file->fechaFile = Carbon::parse($fechaActual)->format("Y-m-d");
+            $file->idEstado = 1;
+            $file->usuarioCreacion = auth()->user()->id;
+            $file->save();
+
+            $fileDetalle = new FileDetalle();
+            $fileDetalle->idFile = $file->id;
+            $fileDetalle->numeroFile = $file->numeroFile;
+            $fileDetalle->idBoleto = $boleto->id;
+            $fileDetalle->idEstado = 1;
+            $fileDetalle->usuarioCreacion = auth()->user()->id;
+            $fileDetalle->save();
+        }else{
+            $oFile = File::where("numeroFile",$this->numeroFile)->first();
+            $fileDetalle = new FileDetalle();
+            $fileDetalle->idFile = $oFile->id;
+            $fileDetalle->numeroFile = $oFile->numeroFile;
+            $fileDetalle->idBoleto = $boleto->id;
+            $fileDetalle->idEstado = 1;
+            $fileDetalle->usuarioCreacion = auth()->user()->id;
+            $fileDetalle->save();
+        }
+        
+
+    }
+
     public function grabarBoleto(){
         $area = Area::find($this->idArea);
         $boleto = new Boleto();
@@ -371,16 +420,18 @@ class Integrador extends Component
         $boleto->cod4 = ' ';
         $boleto->observaciones = ' ';
         $boleto->detalleRutas = $this->detalleRutas;
+        if($this->bookingAgent){
+            $boleto->bookingAgent = $this->bookingAgent;
+        }else{
+            $boleto->bookingAgent = '4IHF';
+        }
         $boleto->estado = 1;
         $boleto->usuarioCreacion = auth()->user()->id;
         $boleto->save();
         $this->grabarPagosSabre($boleto->id);
         $this->grabarRutas($boleto->id, $this->boletoRutas);
+        $this->crearFile($boleto);
         try {
-            // $boleto->save();
-            // $this->grabarRutasSabre1($boleto->id);
-            // $this->grabarRutasSabre2($boleto->id);
-            // $this->grabarPagosSabre($boleto->id);
             return redirect()->route('listaBoletos');
         } catch (\Throwable $th) {
             session()->flash('error', 'Ocurrió un error intentando grabar.');
@@ -439,6 +490,12 @@ class Integrador extends Component
                     $this->tipoCambio = 0.00;
                 }
             }
+
+            //Obtener Emisor
+            $posEmisor = strpos($linea,"ISSUE AGENT/AGENTE EMISOR:");
+            if ($posEmisor !== false) {
+                $this->bookingAgent = substr($linea,$posEmisor+27,9);
+            }
             
             //Obtener Cliente
             $posCliente = strpos($linea,"RUC           :");
@@ -450,7 +507,7 @@ class Integrador extends Component
                     if ($oCliente) {
                         $this->idCliente = $oCliente->id;
                         $this->idTipoFacturacion = $oCliente->tipoFacturacion;
-                        $this->idArea = $oCliente->area;
+                        // $this->idArea = $oCliente->area;
                         $this->idVendedor = $oCliente->vendedor;
                     }
                 }else{
@@ -459,7 +516,7 @@ class Integrador extends Component
                     if ($oCliente) {
                         $this->idCliente = $oCliente->id;
                         $this->idTipoFacturacion = $oCliente->tipoFacturacion;
-                        $this->idArea = $oCliente->area;
+                        // $this->idArea = $oCliente->area;
                         $this->idVendedor = $oCliente->vendedor;
                     }
                 }
@@ -663,7 +720,7 @@ class Integrador extends Component
                 if ($oCliente) {
                     $this->idCliente = $oCliente->id;
                     $this->idTipoFacturacion = $oCliente->tipoFacturacion;
-                    $this->idArea = $oCliente->area;
+                    // $this->idArea = $oCliente->area;
                     $this->idVendedor = $oCliente->vendedor;
                 }
             }
@@ -892,7 +949,7 @@ class Integrador extends Component
                 if ($oCliente) {
                     $this->idCliente = $oCliente->id;
                     $this->idTipoFacturacion = $oCliente->tipoFacturacion;
-                    $this->idArea = $oCliente->area;
+                    // $this->idArea = $oCliente->area;
                     $this->idVendedor = $oCliente->vendedor;
                 }
             }
@@ -905,7 +962,7 @@ class Integrador extends Component
                         if ($oCliente) {
                             $this->idCliente = $oCliente->id;
                             $this->idTipoFacturacion = $oCliente->tipoFacturacion;
-                            $this->idArea = $oCliente->area;
+                            // $this->idArea = $oCliente->area;
                             $this->idVendedor = $oCliente->vendedor;
                         }
                     }

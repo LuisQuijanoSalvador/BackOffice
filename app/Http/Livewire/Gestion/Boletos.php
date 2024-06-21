@@ -33,6 +33,8 @@ use Carbon\Carbon;
 use App\Models\Servicio;
 use App\Models\ServicioPago;
 use App\Models\Documento;
+use App\Models\File;
+use App\Models\FileDetalle;
 
 class Boletos extends Component
 {
@@ -273,6 +275,41 @@ class Boletos extends Component
         }
     }
 
+    public function crearFile($boleto){
+        $fechaActual = Carbon::now();
+        if(!$this->checkFile and !$this->numeroFile){
+            $file = new File();
+            $file->numeroFile = $boleto->numeroFile;
+            $file->idArea = $boleto->idArea;
+            $file->idCliente = $boleto->idCliente;
+            $file->descripcion = $boleto->ruta;
+            $file->totalPago = 0;
+            $file->totalCobro = 0;
+            $file->fechaFile = Carbon::parse($fechaActual)->format("Y-m-d");
+            $file->idEstado = 1;
+            $file->usuarioCreacion = auth()->user()->id;
+            $file->save();
+
+            $fileDetalle = new FileDetalle();
+            $fileDetalle->idFile = $file->id;
+            $fileDetalle->numeroFile = $file->numeroFile;
+            $fileDetalle->idBoleto = $boleto->id;
+            $fileDetalle->idEstado = 1;
+            $fileDetalle->usuarioCreacion = auth()->user()->id;
+            $fileDetalle->save();
+        }else{
+            $oFile = File::where("numeroFile",$this->numeroFile)->first();
+            $fileDetalle = new FileDetalle();
+            $fileDetalle->idFile = $oFile->id;
+            $fileDetalle->numeroFile = $oFile->numeroFile;
+            $fileDetalle->idBoleto = $boleto->id;
+            $fileDetalle->idEstado = 1;
+            $fileDetalle->usuarioCreacion = auth()->user()->id;
+            $fileDetalle->save();
+        }
+
+    }
+
     public function grabar(){
         $this->validate();
         $area = Area::find($this->idArea);
@@ -339,6 +376,7 @@ class Boletos extends Component
         if(count($this->boletoPagos)!="0"){
             $this->grabarPagos($boleto->id);
         }
+        $this->crearFile($boleto);
         try {
             // $boleto->save();
             
@@ -437,8 +475,8 @@ class Boletos extends Component
         $this->estado = '';
         $this->usuarioCreacion = '';
         $this->usuarioModificacion = '';
-        $this->boletoRutas = NULL;
-        $this->boletoPagos = NULL;
+        $this->boletoRutas = new Collection();
+        $this->boletoPagos = new Collection();
     }
 
     public function editar($id){

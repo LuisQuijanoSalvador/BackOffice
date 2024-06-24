@@ -287,7 +287,7 @@ class Integrador extends Component
                 $date2 = $this->formatearFecha($date);
                 $flt = substr($boleto[$i],$posVuelo2,4);
                 $fareBasis = substr($boleto[$i],$posFareBasis2,8);
-                $class = substr($boleto[$i],$posFareBasis2,1);
+                $class = trim(substr($boleto[$i],$posClase2,9));
                 $lv = rtrim(substr($boleto[$i+1],16,18));
                 $horaSalida = rtrim(substr($boleto[$i+1],39,4));
                 $ar = rtrim(substr($boleto[$i+2],16,18));
@@ -825,13 +825,14 @@ class Integrador extends Component
                     'ciudadLlegada' =>  $segmento[2],
                     'idAerolinea' =>  (int)$this->idAerolinea,
                     'vuelo' =>  $segmento[0],
-                    'clase' =>  substr($segmento[7],0,1),
+                    'clase' =>  strtoupper($segmento[8]),
                     'fechaSalida' =>  DateTime::createFromFormat('d/m/y', $segmento[3])->format('Y-m-d'),
                     'horaSalida' =>  Str::remove(':',$segmento[4]),
                     'fechaLlegada' =>  DateTime::createFromFormat('d/m/y', $segmento[5])->format('Y-m-d'),
                     'horaLlegada' =>  Str::remove(':',$segmento[6]),
                     'farebasis' =>  $segmento[7]
                 ));
+                dd($this->boletoRutas);
             }
         } 
 

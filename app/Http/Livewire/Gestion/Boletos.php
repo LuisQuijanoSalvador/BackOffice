@@ -846,8 +846,8 @@ class Boletos extends Component
 
     public function clonarBoleto(){
         $boletoOriginal = Boleto::find($this->idRegistro);
-        $boletoRutaOriginal = BoletoRuta::where('idBoleto',$this->idRegistro)->first();
-        $boletoPagoOriginal = BoletoPago::where('idBoleto',$this->idRegistro)->first();
+        $boletoRutaOriginal = BoletoRuta::where('idBoleto',$this->idRegistro)->get();
+        $boletoPagoOriginal = BoletoPago::where('idBoleto',$this->idRegistro)->get();
         
         $boletoClon = new Boleto();
         $boletoClon->numeroBoleto = "0000000000";
@@ -901,34 +901,40 @@ class Boletos extends Component
         $boletoClon->save();
 
         if($boletoRutaOriginal){
-            $boletoRutaClon = new BoletoRuta();
-            $boletoRutaClon->idBoleto = $boletoClon->id;
-            $boletoRutaClon->idAerolinea = $boletoRutaOriginal->idAerolinea;
-            $boletoRutaClon->ciudadSalida = $boletoRutaOriginal->ciudadSalida;
-            $boletoRutaClon->ciudadLlegada = $boletoRutaOriginal->ciudadLlegada;
-            $boletoRutaClon->vuelo = $boletoRutaOriginal->vuelo;
-            $boletoRutaClon->clase = $boletoRutaOriginal->clase;
-            $boletoRutaClon->fechaSalida = $boletoRutaOriginal->fechaSalida;
-            $boletoRutaClon->horaSalida = $boletoRutaOriginal->horaSalida;
-            $boletoRutaClon->fechaLlegada = $boletoRutaOriginal->fechaLlegada;
-            $boletoRutaClon->horaLlegada = $boletoRutaOriginal->horaLlegada;
-            $boletoRutaClon->farebasis = $boletoRutaOriginal->farebasis;
-            $boletoRutaClon->idEstado = $boletoRutaOriginal->idEstado;
-            $boletoRutaClon->usuarioCreacion = $boletoRutaOriginal->usuarioCreacion;
-            $boletoRutaClon->save();
+            foreach ($boletoRutaOriginal as $ruta) {
+                $boletoRutaClon = new BoletoRuta();
+                $boletoRutaClon->idBoleto = $boletoClon->id;
+                $boletoRutaClon->idAerolinea = $ruta->idAerolinea;
+                $boletoRutaClon->ciudadSalida = $ruta->ciudadSalida;
+                $boletoRutaClon->ciudadLlegada = $ruta->ciudadLlegada;
+                $boletoRutaClon->vuelo = $ruta->vuelo;
+                $boletoRutaClon->clase = $ruta->clase;
+                $boletoRutaClon->fechaSalida = $ruta->fechaSalida;
+                $boletoRutaClon->horaSalida = $ruta->horaSalida;
+                $boletoRutaClon->fechaLlegada = $ruta->fechaLlegada;
+                $boletoRutaClon->horaLlegada = $ruta->horaLlegada;
+                $boletoRutaClon->farebasis = $ruta->farebasis;
+                $boletoRutaClon->idEstado = $ruta->idEstado;
+                $boletoRutaClon->usuarioCreacion = $ruta->usuarioCreacion;
+                $boletoRutaClon->save();
+            }
+            
         }
         
         if($boletoPagoOriginal){
-            $boletoPagoClon = new BoletoPago();
-            $boletoPagoClon->idBoleto = $boletoClon->id;
-            $boletoPagoClon->idMedioPago = $boletoPagoOriginal->idMedioPago;
-            $boletoPagoClon->idTarjetaCredito = $boletoPagoOriginal->idTarjetaCredito;
-            $boletoPagoClon->numeroTarjeta = $boletoPagoOriginal->numeroTarjeta;
-            $boletoPagoClon->monto = $boletoPagoOriginal->monto;
-            $boletoPagoClon->fechaVencimientoTC = $boletoPagoOriginal->fechaVencimientoTC;
-            $boletoPagoClon->idEstado = $boletoPagoOriginal->idEstado;
-            $boletoPagoClon->usuarioCreacion = $boletoPagoOriginal->usuarioCreacion;
-            $boletoPagoClon->save();
+            foreach ($boletoPagoOriginal as $pago) {
+                $boletoPagoClon = new BoletoPago();
+                $boletoPagoClon->idBoleto = $boletoClon->id;
+                $boletoPagoClon->idMedioPago = $pago->idMedioPago;
+                $boletoPagoClon->idTarjetaCredito = $pago->idTarjetaCredito;
+                $boletoPagoClon->numeroTarjeta = $pago->numeroTarjeta;
+                $boletoPagoClon->monto = $pago->monto;
+                $boletoPagoClon->fechaVencimientoTC = $pago->fechaVencimientoTC;
+                $boletoPagoClon->idEstado = $pago->idEstado;
+                $boletoPagoClon->usuarioCreacion = $pago->usuarioCreacion;
+                $boletoPagoClon->save();
+            }
+            
         }
         return redirect()->route('listaBoletos');
     }

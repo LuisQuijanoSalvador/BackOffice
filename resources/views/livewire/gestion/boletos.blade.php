@@ -687,14 +687,14 @@
                                     
                                     <div class="col-md-1">
                                         <label for="txtCiudadSalida" class="">Salida:</label>
-                                        <input type="text" class="uTextBox" maxlength="3" id="txtCiudadSalida" wire:model.lazy.defer="ciudadSalida" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
+                                        <input type="text" class="uTextBox" id="txtCiudadSalida" wire:model.lazy.defer="ciudadSalida" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                                         @error('ciudadSalida')
                                             <span class="error">{{$message}}</span>
                                         @enderror
                                     </div>
                                     <div class="col-md-1">
                                         <label for="txtCiudadLlegada" class="">Llegada:</label>
-                                        <input required type="text" class="uTextBox" maxlength="3" id="txtCiudadLlegada" wire:model.lazy.defer="ciudadLlegada" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
+                                        <input required type="text" class="uTextBox" id="txtCiudadLlegada" wire:model.lazy.defer="ciudadLlegada" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                                         @error('ciudadLlegada')
                                             <span class="error">{{$message}}</span>
                                         @enderror
@@ -720,7 +720,7 @@
                                     </div>
                                     <div class="col-md-1">
                                         <label for="txtClase" class="">Clase:</label>
-                                        <input required type="text" class="uTextBox" maxlength="1" id="txtClase" wire:model.lazy.defer="clase" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
+                                        <input required type="text" class="uTextBox" id="txtClase" wire:model.lazy.defer="clase" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                                         @error('clase')
                                             <span class="error">{{$message}}</span>
                                         @enderror
@@ -853,14 +853,14 @@
                                     
                                     <div class="col-md-1">
                                         <label for="txtCiudadSalida" class="">Salida:</label>
-                                        <input type="text" class="uTextBox" maxlength="3" id="txtCiudadSalida" wire:model.lazy.defer="ciudadSalida" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
+                                        <input type="text" class="uTextBox" id="txtCiudadSalida" wire:model.lazy.defer="ciudadSalida" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                                         @error('ciudadSalida')
                                             <span class="error">{{$message}}</span>
                                         @enderror
                                     </div>
                                     <div class="col-md-1">
                                         <label for="txtCiudadLlegada" class="">Llegada:</label>
-                                        <input required type="text" class="uTextBox" maxlength="3" id="txtCiudadLlegada" wire:model.lazy.defer="ciudadLlegada" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
+                                        <input required type="text" class="uTextBox" id="txtCiudadLlegada" wire:model.lazy.defer="ciudadLlegada" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                                         @error('ciudadLlegada')
                                             <span class="error">{{$message}}</span>
                                         @enderror
@@ -886,7 +886,7 @@
                                     </div>
                                     <div class="col-md-1">
                                         <label for="txtClase" class="">Clase:</label>
-                                        <input required type="text" class="uTextBox" maxlength="1" id="txtClase" wire:model.lazy.defer="clase" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
+                                        <input required type="text" class="uTextBox" id="txtClase" wire:model.lazy.defer="clase" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
                                         @error('clase')
                                             <span class="error">{{$message}}</span>
                                         @enderror

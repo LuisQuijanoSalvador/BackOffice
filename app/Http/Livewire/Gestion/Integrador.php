@@ -832,7 +832,6 @@ class Integrador extends Component
                     'horaLlegada' =>  Str::remove(':',$segmento[6]),
                     'farebasis' =>  $segmento[7]
                 ));
-                dd($this->boletoRutas);
             }
         } 
 

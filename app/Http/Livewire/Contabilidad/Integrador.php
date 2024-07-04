@@ -47,6 +47,150 @@ class Integrador extends Component
             $this->subdiario = '21';
         }
         if($this->tipoDocumento == '21'){
+            $plantilla = IOFactory::load(public_path('plantilla.xlsx'));
+
+            // Obtener la hoja activa
+            $hoja = $plantilla->getActiveSheet();
+
+            $abonos = DB::table('vista_abono_contabilidad')
+                            ->whereBetween('fechaCargo',[$this->fechaIni, $this->fechaFin])
+                            ->orderby('fechaCargo')
+                            ->get();
+
+            $fila = 5;
+            $cNumeroAbono = '';
+            $nTotalAbono = 0;
+            $nContador = 0;
+            $done = [];
+            foreach($abonos as $abono){
+                if(!in_array($abono->numeroAbono, $done)){
+                    $fechaEntero = strtotime($abono->fechaCargo);
+                    $mes = date('m',$fechaEntero);
+                    $numComprobante = $mes . str_pad($this->correlativo, 4, "0", STR_PAD_LEFT);
+                    $hoja->setCellValue('A' . $fila, '');
+                    $hoja->setCellValue('B' . $fila, $this->subdiario);
+                    $hoja->setCellValue('C' . $fila, $numComprobante);
+                    $hoja->setCellValue('D' . $fila, date('d/m/Y', strtotime($abono->fechaCargo)));
+                    $hoja->setCellValue('E' . $fila, $abono->moneda);
+                    $hoja->setCellValue('F' . $fila, 'COBRANZAS ' . $abono->banco);
+                    $hoja->setCellValue('G' . $fila, 0);
+                    $hoja->setCellValue('H' . $fila, 'M');
+                    $hoja->setCellValue('I' . $fila, 'S');
+                    $hoja->setCellValue('J' . $fila, '');
+                    if($abono->moneda == 'US'){
+                        $hoja->setCellValue('K' . $fila, '104103');
+                    }else{
+                        $hoja->setCellValue('K' . $fila, '104102');
+                    }
+                    $hoja->setCellValue('L' . $fila, '');
+                    $hoja->setCellValue('M' . $fila, '0');
+                    $hoja->setCellValue('N' . $fila, 'D');
+                    // $hoja->setCellValue('O' . $fila, $nTotalAbono);
+                    $hoja->setCellValue('P' . $fila, 0);
+                    $hoja->setCellValue('Q' . $fila, 0);
+                    $hoja->setCellValue('R' . $fila, 'TR');
+                    $hoja->setCellValue('S' . $fila, $abono->medioPago);
+                    $hoja->setCellValue('T' . $fila, date('d/m/Y', strtotime($abono->fechaCargo)));
+                    $hoja->setCellValue('U' . $fila, date('d/m/Y', strtotime($abono->fechaCargo)));
+                    $hoja->setCellValue('V' . $fila, '');
+                    $hoja->setCellValue('W' . $fila, 'CANCELACION');
+
+                    $cNumeroAbono = $abono->numeroAbono;
+
+                    foreach($abonos as $abono2){
+                        if($abono2->numeroAbono == $cNumeroAbono){
+                            $fila++;
+                            $hoja->setCellValue('A' . $fila, '');
+                            $hoja->setCellValue('B' . $fila, $this->subdiario);
+                            $hoja->setCellValue('C' . $fila, $numComprobante);
+                            $hoja->setCellValue('D' . $fila, date('d/m/Y', strtotime($abono2->fechaCargo)));
+                            $hoja->setCellValue('E' . $fila, $abono2->moneda);
+                            $hoja->setCellValue('F' . $fila, 'COBRANZAS ' . $abono2->banco);
+                            $hoja->setCellValue('G' . $fila, 0);
+                            $hoja->setCellValue('H' . $fila, 'M');
+                            $hoja->setCellValue('I' . $fila, 'S');
+                            $hoja->setCellValue('J' . $fila, '');
+                            $hoja->setCellValue('K' . $fila, $abono2->cuentaContable);
+                            $hoja->setCellValue('L' . $fila, $abono2->numeroDocumentoIdentidad);
+                            $hoja->setCellValue('M' . $fila, '0');
+                            $hoja->setCellValue('N' . $fila, 'H');
+                            $hoja->setCellValue('O' . $fila, $abono2->monto);
+                            $hoja->setCellValue('P' . $fila, 0);
+                            $hoja->setCellValue('Q' . $fila, 0);
+                            $hoja->setCellValue('R' . $fila, $abono2->tipoDocumento);
+                            $hoja->setCellValue('S' . $fila, $abono2->numeroDocumento);
+                            $hoja->setCellValue('T' . $fila, date('d/m/Y', strtotime($abono2->fechaCargo)));
+                            $hoja->setCellValue('U' . $fila, date('d/m/Y', strtotime($abono2->fechaCargo)));
+                            $hoja->setCellValue('V' . $fila, '');
+                            $hoja->setCellValue('W' . $fila, 'CANCELACION');
+
+                            $nTotalAbono = $nTotalAbono + $abono2->monto;
+                            // $nTotalAbono += $abono2->monto;
+                            $nContador++;
+                        }else{
+                            // $nTotalAbono = $abono->monto;
+                        }
+                        
+                    }
+                    $hoja->setCellValue('O' . $fila-$nContador, $nTotalAbono);
+                    $nTotalAbono = 0;
+                    array_push($done, $abono->numeroAbono);
+                    // dd($fila. ' ----- ' . $nContador);
+                    // if($nTotalAbono > 1){
+                    //     dd($nTotalAbono . ' ------- ' .$abono2->monto);
+                    // }
+                    // dd('ALgo anda mal');
+                    
+                    $nContador = 0;
+                    // $nTotalAbono = 0;
+                    // dd($cNumeroAbono);
+                    $fila++;
+                    $this->correlativo = $this->correlativo +1;
+                }
+                //     // $fila = $fila + 1;
+
+                //     $fechaEntero = strtotime($abono->fechaAbono);
+                //     $mes = date('m',$fechaEntero);
+                //     $numComprobante = $mes . str_pad($this->correlativo, 4, "0", STR_PAD_LEFT);
+                //     $hoja->setCellValue('A' . $fila, '');
+                //     $hoja->setCellValue('B' . $fila, $this->subdiario);
+                //     $hoja->setCellValue('C' . $fila, $numComprobante);
+                //     $hoja->setCellValue('D' . $fila, date('d/m/Y', strtotime($abono->fechaAbono)));
+                //     $hoja->setCellValue('E' . $fila, $abono->moneda);
+                //     $hoja->setCellValue('F' . $fila, 'COBRANZAS' . $abono->banco);
+                //     $hoja->setCellValue('G' . $fila, 0);
+                //     $hoja->setCellValue('H' . $fila, 'M');
+                //     $hoja->setCellValue('I' . $fila, 'S');
+                //     $hoja->setCellValue('J' . $fila, '');
+                //     $hoja->setCellValue('K' . $fila, $abono->cuentaContable);
+                //     $hoja->setCellValue('L' . $fila, $abono->numeroDocumentoIdentidad);
+                //     $hoja->setCellValue('M' . $fila, '0');
+                //     $hoja->setCellValue('N' . $fila, 'H');
+                //     $hoja->setCellValue('O' . $fila, $abono->monto);
+                //     $hoja->setCellValue('P' . $fila, 0);
+                //     $hoja->setCellValue('Q' . $fila, 0);
+                //     $hoja->setCellValue('R' . $fila, $abono->tipoDocumento);
+                //     $hoja->setCellValue('S' . $fila, $abono->numeroDocumento);
+                //     $hoja->setCellValue('T' . $fila, date('d/m/Y', strtotime($abono->fechaAbono)));
+                //     $hoja->setCellValue('U' . $fila, date('d/m/Y', strtotime($abono->fechaAbono)));
+                //     $hoja->setCellValue('V' . $fila, '');
+                //     $hoja->setCellValue('W' . $fila, 'CANCELACION');
+
+                //     $cNumeroAbono = $abono->numeroAbono;
+
+                //     $nTotalAbono = $nTotalAbono + $abono->monto;
+                // }
+                
+
+                // $cNumeroAbono = $abono->numeroAbono;
+                
+            }
+             // Guardar el archivo
+             $writer = IOFactory::createWriter($plantilla, 'Xlsx');
+             $writer->save(storage_path('app/archivo_generado.xlsx'));
+ 
+             // Descargar el archivo
+             return response()->download(storage_path('app/archivo_generado.xlsx'))->deleteFileAfterSend(true);
             // // Cargar la plantilla de Excel
             // $plantilla = IOFactory::load(public_path('plantilla.xlsx'));
 
@@ -57,7 +201,7 @@ class Integrador extends Component
             //             \DB::raw("CASE abonos.moneda WHEN 1 THEN 'US' ELSE 'MN' END AS Moneda"),
             //             'monto',
             //             'd.serie',
-            //             'd.numero',
+            //             'd.numero',7
             //             \DB::raw("CASE d.tipoDocumento WHEN '36' THEN 'DC' WHEN '01' THEN 'FT' WHEN '03' THEN 'BV' END AS tipoDocumento"),
             //             'b.nombre AS banco',
             //             \DB::raw("IFNULL(b.cuentaContableDolares, b.cuentaContableSoles) AS cuentaContable"),

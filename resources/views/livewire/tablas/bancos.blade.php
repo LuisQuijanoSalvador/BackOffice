@@ -36,6 +36,9 @@
                         <i class="fas fa-sort float-right py-1 px-1"></i>
                     @endif
                 </th>
+                <th scope="col" class="py-1 cursor-pointer">
+                    Cuenta Contable 
+                </th>
                 <th scope="col" class="py-1 cursor-pointer" wire:click="order('estado')">
                     Estado 
                     @if ($sort == 'estado')
@@ -55,6 +58,7 @@
                 <td class="py-1">{{$banco->nombre}}</td>
                 <td class="py-1">{{$banco->numeroCuenta}}</td>
                 <td class="py-1">{{$banco->cci}}</td>
+                <td class="py-1">@if(!$banco->cuentaContableSoles){{$banco->cuentaContableDolares}}@else{{$banco->cuentaContableSoles}}@endif</td>
                 <td class="py-1">{{$banco->tEstado->descripcion}}</td>
                 <td class="py-1">
                     <div class="btn-group text-end" role="group" aria-label="Botones de accion">
@@ -93,6 +97,13 @@
             <label for="txtCci" class="form-label">CCI: </label>
             <input type="text" class="form-control" id="txtCci" wire:model.lazy="cci">
             @error('cci')
+                <span class="error">{{$message}}</span>
+            @enderror
+        </div>
+        <div class="mb-3">
+            <label for="txtCci" class="form-label">Cuenta Contable: </label>
+            <input type="text" class="form-control" id="txtCuentaContable" wire:model.lazy="cuentaContable">
+            @error('cuentaContable')
                 <span class="error">{{$message}}</span>
             @enderror
         </div>

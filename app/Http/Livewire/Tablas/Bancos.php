@@ -16,13 +16,14 @@ class Bancos extends Component
     public $sort= 'nombre';
     public $direction = 'asc';
 
-    public $idRegistro, $nombre, $numeroCuenta, $cci, $idEstado;
+    public $idRegistro, $nombre, $numeroCuenta, $cci, $cuentaContable, $idEstado;
 
     public function rules(){
         return[
             'nombre'      => 'required',
             'numeroCuenta'     => 'required',
             'cci'     => 'required',
+            'cuentaContable' => 'required',
             'idEstado'  => 'required'
         ];
     }
@@ -31,6 +32,7 @@ class Bancos extends Component
         'nombre.required' => 'El campo Nombre no puede estar en blanco.',
         'numeroCuenta.required' => 'El campo Numero Cuenta no puede estar en blanco.',
         'cci.required' => 'El campo CCI no puede estar en blanco.',
+        'cuentaContable.required' => 'El campo Cuenta Contable no puede estar en blanco.',
         'idEstado.required' => 'Debe seleccionar una opcion.',
     ];
 
@@ -64,6 +66,7 @@ class Bancos extends Component
         $banco->nombre  = $this->nombre;
         $banco->numeroCuenta = $this->numeroCuenta;
         $banco->cci  = $this->cci;
+        $banco->cuentaContableSoles  = $this->cuentaContable;
         $banco->idEstado = $this->idEstado;
         $banco->usuarioCreacion = auth()->user()->id;
         $banco->save();
@@ -76,6 +79,7 @@ class Bancos extends Component
         $this->nombre = "";
         $this->numeroCuenta = "";
         $this->cci = "";
+        $this->cuentaContable = "";
         $this->estado = "";
     }
 
@@ -86,7 +90,8 @@ class Bancos extends Component
         $this->nombre = $banco->nombre;
         $this->numeroCuenta = $banco->numeroCuenta;
         $this->cci = $banco->cci;
-        $this->estado = $banco->estado;
+        $this->cuentaContable = $banco->cuentaContableSoles;
+        $this->idEstado = $banco->idEstado;
     }
 
     public function actualizar($id){
@@ -94,6 +99,7 @@ class Bancos extends Component
         $banco->nombre = $this->nombre;
         $banco->numeroCuenta = $this->numeroCuenta;
         $banco->cci = $this->cci;
+        $banco->cuentaContableSoles = $this->cuentaContable;
         $banco->estado = $this->estado;
         $banco->usuarioModificacion = auth()->user()->id;
         $banco->save();

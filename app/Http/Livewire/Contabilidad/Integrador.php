@@ -72,16 +72,17 @@ class Integrador extends Component
                     $hoja->setCellValue('C' . $fila, $numComprobante);
                     $hoja->setCellValue('D' . $fila, date('d/m/Y', strtotime($abono->fechaCargo)));
                     $hoja->setCellValue('E' . $fila, $abono->moneda);
-                    $hoja->setCellValue('F' . $fila, 'COBRANZAS ' . $abono->banco);
+                    $hoja->setCellValue('F' . $fila, $abono->cuentaContable . ' - COBRANZAS ' . $abono->banco);
                     $hoja->setCellValue('G' . $fila, 0);
                     $hoja->setCellValue('H' . $fila, 'M');
                     $hoja->setCellValue('I' . $fila, 'S');
                     $hoja->setCellValue('J' . $fila, '');
-                    if($abono->moneda == 'US'){
-                        $hoja->setCellValue('K' . $fila, '104103');
-                    }else{
-                        $hoja->setCellValue('K' . $fila, '104102');
-                    }
+                    $hoja->setCellValue('K' . $fila, $abono->cuentaContable);
+                    // if($abono->moneda == 'US'){
+                    //     $hoja->setCellValue('K' . $fila, '104103');
+                    // }else{
+                    //     $hoja->setCellValue('K' . $fila, '104102');
+                    // }
                     $hoja->setCellValue('L' . $fila, '');
                     $hoja->setCellValue('M' . $fila, '0');
                     $hoja->setCellValue('N' . $fila, 'D');

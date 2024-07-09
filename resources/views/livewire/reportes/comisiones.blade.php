@@ -56,6 +56,9 @@
                         PROVEEDOR
                     </th>
                     <th scope="col" class="py-1">
+                        SERVICIO
+                    </th>
+                    <th scope="col" class="py-1">
                         NUM. BOLETO
                     </th>
                     <th scope="col" class="py-1">
@@ -102,6 +105,7 @@
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                             <td class="py-1">{{\Carbon\Carbon::parse($comision->fechaEmision)->format('d-m-Y')}}</td>
                             <td class="py-1">{{$comision->Proveedor}}</td>
+                            <td class="py-1">{{$comision->servicio}}</td>
                             <td class="py-1">{{$comision->numeroBoleto}}</td>
                             <td class="py-1">{{$comision->Cliente}}</td>
                             <td class="py-1">{{$comision->pasajero}}</td>

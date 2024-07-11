@@ -57,28 +57,6 @@ class Documentos extends Component
     }
     public function render()
     {
-        // if (strlen($this->search)> 0){
-        //     $this->documentos = Documento::query()
-        //     ->when($this->search, function($query){
-        //         $query->where('numero', 'like', '%'. $this->search . '%');
-        //     })
-        //                     ->orderBy($this->sort, $this->direction)
-        //                     ->paginate(8);
-        // }
-        // $this->filtrar();
-        
-        // $documentos = Documento::where('numero', 'like', "%$this->search%")
-        // $documentos = $this->documentos;
-        // $this->documentos = Documento::query()
-        //     ->when($this->filtroCliente, function($query){
-        //         $query->where('idCliente', $this->filtroCliente);
-        //     })
-        //     ->when($this->search, function($query){
-        //         $query->where('numero', 'like', '%'. $this->search . '%');
-        //     })
-        //                     ->orderBy($this->sort, $this->direction)
-        //                     ->paginate(8);
-        // // $documentos = $this->documentos;
         $tipoDocumentos = TipoDocumento::all()->sortBy('descripcion');
         $estados = Estado::all()->sortBy('descripcion');
         $clientes = Cliente::all()->sortBy('razonSocial');
@@ -194,8 +172,6 @@ class Documentos extends Component
                 return;
             }
         }
-        
-
         $this->idRegistro = $documento->id;
         $this->numero = $documento->numero;
         $this->numeroCompleto = str_pad($documento->numero,8,"0",STR_PAD_LEFT);

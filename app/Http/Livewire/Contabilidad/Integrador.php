@@ -53,8 +53,8 @@ class Integrador extends Component
             $hoja = $plantilla->getActiveSheet();
 
             $abonos = DB::table('vista_abono_contabilidad')
-                            ->whereBetween('fechaCargo',[$this->fechaIni, $this->fechaFin])
-                            ->orderby('fechaCargo')
+                            ->whereBetween('fechaAbono',[$this->fechaIni, $this->fechaFin])
+                            ->orderby('fechaAbono')
                             ->get();
 
             $fila = 5;
@@ -62,24 +62,24 @@ class Integrador extends Component
             $nTotalAbono = 0;
             $nContador = 0;
             $done = [];
-            $tipoDoc = '';
-            $moneda = '';
+            // $tipoDoc = '';
+            // $moneda = '';
             foreach($abonos as $abono){
                 if(!in_array($abono->numeroAbono, $done)){
-                    $fechaEntero = strtotime($abono->fechaCargo);
+                    $fechaEntero = strtotime($abono->fechaAbono);
                     $mes = date('m',$fechaEntero);
                     $numComprobante = $mes . str_pad($this->correlativo, 4, "0", STR_PAD_LEFT);
                     $hoja->setCellValue('A' . $fila, '');
                     $hoja->setCellValue('B' . $fila, $this->subdiario);
                     $hoja->setCellValue('C' . $fila, $numComprobante);
-                    $hoja->setCellValue('D' . $fila, date('d/m/Y', strtotime($abono->fechaCargo)));
+                    $hoja->setCellValue('D' . $fila, date('d/m/Y', strtotime($abono->fechaAbono)));
                     $hoja->setCellValue('E' . $fila, $abono->moneda);
                     $hoja->setCellValue('F' . $fila, $abono->cuentaContable . ' - COBRANZAS ' . $abono->banco);
                     $hoja->setCellValue('G' . $fila, 0);
                     $hoja->setCellValue('H' . $fila, 'M');
                     $hoja->setCellValue('I' . $fila, 'S');
                     $hoja->setCellValue('J' . $fila, '');
-                    $hoja->setCellValue('K' . $fila, $abono->cuentaContable . ' - ' . $abono->banco);
+                    $hoja->setCellValue('K' . $fila, $abono->cuentaContable);
                     // if($abono->moneda == 'US'){
                     //     $hoja->setCellValue('K' . $fila, '104103');
                     // }else{
@@ -93,8 +93,8 @@ class Integrador extends Component
                     $hoja->setCellValue('Q' . $fila, 0);
                     $hoja->setCellValue('R' . $fila, 'TR');
                     $hoja->setCellValue('S' . $fila, $abono->referencia);
-                    $hoja->setCellValue('T' . $fila, date('d/m/Y', strtotime($abono->fechaCargo)));
-                    $hoja->setCellValue('U' . $fila, date('d/m/Y', strtotime($abono->fechaCargo)));
+                    $hoja->setCellValue('T' . $fila, date('d/m/Y', strtotime($abono->fechaAbono)));
+                    $hoja->setCellValue('U' . $fila, date('d/m/Y', strtotime($abono->fechaAbono)));
                     $hoja->setCellValue('V' . $fila, '');
                     $hoja->setCellValue('W' . $fila, 'CANCELACION');
 
@@ -106,16 +106,16 @@ class Integrador extends Component
                             $hoja->setCellValue('A' . $fila, '');
                             $hoja->setCellValue('B' . $fila, $this->subdiario);
                             $hoja->setCellValue('C' . $fila, $numComprobante);
-                            $hoja->setCellValue('D' . $fila, date('d/m/Y', strtotime($abono2->fechaCargo)));
+                            $hoja->setCellValue('D' . $fila, date('d/m/Y', strtotime($abono2->fechaAbono)));
                             $hoja->setCellValue('E' . $fila, $abono2->moneda);
                             $hoja->setCellValue('F' . $fila, $abono->cuentaContable . ' - COBRANZAS ' . $abono2->banco);
                             $hoja->setCellValue('G' . $fila, 0);
                             $hoja->setCellValue('H' . $fila, 'M');
                             $hoja->setCellValue('I' . $fila, 'S');
                             $hoja->setCellValue('J' . $fila, '');
-                            if($abono2->tipoDocumento == 'FT'){$tipoDoc = 'FACTURA POR COBRAR EMITIDAS';}elseif($abono2->tipoDocumento == 'BV'){$tipoDoc = 'BOLETA DE VENTA POR COBRAR EMITIDAS';}elseif($abono2->tipoDocumento == 'DC'){$tipoDoc = 'DOCUMENTO DE COBRANZA';}
-                            if($abono2->moneda == 'US'){$moneda = 'ME';}else{$moneda = 'MN';}
-                            $hoja->setCellValue('K' . $fila, $abono2->cuentaContableDoc . ' - ' . $tipoDoc . ' - ' . $moneda);
+                            // if($abono2->tipoDocumento == 'FT'){$tipoDoc = 'FACTURA POR COBRAR EMITIDAS';}elseif($abono2->tipoDocumento == 'BV'){$tipoDoc = 'BOLETA DE VENTA POR COBRAR EMITIDAS';}elseif($abono2->tipoDocumento == 'DC'){$tipoDoc = 'DOCUMENTO DE COBRANZA';}
+                            // if($abono2->moneda == 'US'){$moneda = 'ME';}else{$moneda = 'MN';}
+                            $hoja->setCellValue('K' . $fila, $abono2->cuentaContableDoc);
                             $hoja->setCellValue('L' . $fila, $abono2->numeroDocumentoIdentidad);
                             $hoja->setCellValue('M' . $fila, '0');
                             $hoja->setCellValue('N' . $fila, 'H');
@@ -124,8 +124,8 @@ class Integrador extends Component
                             $hoja->setCellValue('Q' . $fila, 0);
                             $hoja->setCellValue('R' . $fila, $abono2->tipoDocumento);
                             $hoja->setCellValue('S' . $fila, $abono2->numeroDocumento);
-                            $hoja->setCellValue('T' . $fila, date('d/m/Y', strtotime($abono2->fechaCargo)));
-                            $hoja->setCellValue('U' . $fila, date('d/m/Y', strtotime($abono2->fechaCargo)));
+                            $hoja->setCellValue('T' . $fila, date('d/m/Y', strtotime($abono2->fechaAbono)));
+                            $hoja->setCellValue('U' . $fila, date('d/m/Y', strtotime($abono2->fechaAbono)));
                             $hoja->setCellValue('V' . $fila, '');
                             $hoja->setCellValue('W' . $fila, 'CANCELACION');
 

@@ -221,7 +221,10 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-2"></div>
+                        <div class="col-md-2">
+                            <label for="txtMoneda" class="">Moneda: </label>
+                            <input disabled type="text" class="uTextBox" id="txtMoneda" wire:model.lazy.defer="moneda">
+                        </div>
                         <div class="col-md-2"></div>
                         <div class="col-md-2">
                             <label for="cboEstado" class="form-label">Estado:</label>

@@ -17,7 +17,7 @@ use Maatwebsite\Excel\Facades\Excel;
 class Abonos extends Component
 {
     public $selectedIds, $datos, $fechaAbono, $tipoCambio, $moneda = 1, $idBanco = 2, $idTarjetaCredito = 1,
-    $idMedioPago = 1, $observaciones = '', $referencia = '', $totalPagos = 0, $totalAbono;
+    $idMedioPago = 1, $observaciones = '', $referencia = '', $totalPagos = 0, $totalAbono, $numDoc, $lBuscar = 0;
 
     public $abonos,$abonosVista, $fechaInicio,$fechaFin;
 
@@ -65,6 +65,14 @@ class Abonos extends Component
         ->whereBetween('abonos.fechaAbono', [$this->fechaInicio, $this->fechaFin])
         ->orderBy('abonos.fechaAbono')
         ->get();
+        $this->lBuscar = 1;
+    }
+
+    public function buscarDoc(){
+        $this->abonos = DB::table('vista_abonos_general')
+                        ->where('Documento','like',"%$this->numDoc%")
+                        ->get();
+        $this->lBuscar = 2;
     }
 
     public function ver($numAbono){
@@ -87,6 +95,20 @@ class Abonos extends Component
         $this->moneda = $abono->moneda;
         $this->tipoCambio = $abono->tipoCambio;
         $this->observaciones = $abono->observaciones;
+        $this->poblarGrid();
+    //     if($this->lBuscar == 0){
+    //         $this->poblarGrid();
+    //     }
+    //     if($this->lBuscar == 1){
+    //         $this->filtrar();
+    //     }
+    //     if($this->lBuscar == 0){
+    //         $this->buscarDoc();
+    //     }
+    }
+
+    public function limpiarAbonosVista(){
+        $this->abonosVista = NULL;
         $this->poblarGrid();
     }
 

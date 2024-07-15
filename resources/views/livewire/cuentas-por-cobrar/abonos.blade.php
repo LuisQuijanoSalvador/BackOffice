@@ -26,6 +26,12 @@
         <div class="col-md-2">
             <button type="button" class="btn btn-primary" wire:click="filtrar" >Filtrar</button>
         </div>
+        <div class="col-md-2">
+            <input type="text" wire:model.lazy.defer="numDoc" id="txtNumDoc" style="width: 100%; text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();" placeholder="Buscar por Documento">
+        </div>
+        <div class="col-md-1">
+            <button type="button" class="btn btn-primary" wire:click="buscarDoc" >Buscar</button>
+        </div>
     </div>
     <hr>
     <div class="contenedorTablaCC">
@@ -100,7 +106,7 @@
           <div class="modal-content">
             <div class="modal-header">
               <h1 class="modal-title fs-5" id="exampleModalLabel">Abono</h1>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" wire:click='limpiarAbonosVista'></button>
             </div>
             <div class="modal-body">
                 <div class="row">
@@ -213,7 +219,7 @@
 
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" wire:click='limpiarAbonosVista'>Cerrar</button>
             </div>
           </div>
         </div>

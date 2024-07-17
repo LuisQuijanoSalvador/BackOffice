@@ -543,6 +543,10 @@ return [
                     'text' => 'Alltech',
                     'route' => 'rptVentasAlltech'
                 ],
+                [
+                    'text' => 'Segmentos',
+                    'route' => 'rptSegmentos'
+                ],
             ]
         ],
         [

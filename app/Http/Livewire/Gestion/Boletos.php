@@ -900,6 +900,15 @@ class Boletos extends Component
         $boletoClon->usuarioCreacion = $boletoOriginal->usuarioCreacion;
         $boletoClon->save();
 
+        $oFile = File::where("numeroFile",$boletoClon->numeroFile)->first();
+        $fileDetalle = new FileDetalle();
+        $fileDetalle->idFile = $oFile->id;
+        $fileDetalle->numeroFile = $oFile->numeroFile;
+        $fileDetalle->idBoleto = $boletoClon->id;
+        $fileDetalle->idEstado = 1;
+        $fileDetalle->usuarioCreacion = auth()->user()->id;
+        $fileDetalle->save();
+
         if($boletoRutaOriginal){
             foreach ($boletoRutaOriginal as $ruta) {
                 $boletoRutaClon = new BoletoRuta();

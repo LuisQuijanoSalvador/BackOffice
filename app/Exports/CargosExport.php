@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use App\Models\Cliente;
 use App\Models\Counter;
+use Illuminate\Support\Facades\DB;
 
 
 class CargosExport implements  FromView, WithStyles
@@ -37,11 +38,9 @@ class CargosExport implements  FromView, WithStyles
         // dd($suma);
         $this->razonSocial = $cliente->razonSocial;
         return view('exports.ctasCobrar.estado-cuentas', [
-            'cargos' => Cargo::where('idCliente', $this->idCliente)
-                            ->where('idEstado',1)
-                            ->where('saldo','>',0)
-                            ->whereBetween('fechaEmision', [$this->fechaInicio, $this->fechaFin])
-                            ->orderBy('fechaEmision', 'asc')
+            'cargos' => DB::table('vista_estadocuenta')
+                            ->where('idCliente', $this->idCliente)
+                            ->whereBetween('fechaEmision',[$this->fechaInicio, $this->fechaFin])
                             ->get()
         ],compact('cliente','counter','suma'));
     }

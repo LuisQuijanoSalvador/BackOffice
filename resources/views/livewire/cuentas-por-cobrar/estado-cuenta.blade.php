@@ -87,23 +87,25 @@
                 @foreach ($estadoCuentas as $estCuent)
     
                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                    <td class="py-1">@if($estCuent->tipoDocumento == '36')DOC. COBRANZA @elseif($estCuent->tipoDocumento == '01')FACTURA @elseif($estCuent->tipoDocumento == '03')BOLETA @endif</td>
-                    <td class="py-1">{{$estCuent->serieDocumento. ' ' . $estCuent->numeroDocumento}}</td>
-                    <td class="py-1">@if($estCuent->idAerolinea){{$estCuent->tAerolinea->razonSocial}} @else AS TRAVEL @endif</td>
-                    <td class="py-1">{{$estCuent->fechaEmision}}</td>
-                    <td class="py-1">{{$estCuent->fechaVencimiento}}</td>
+                    {{-- <td class="py-1">@if($estCuent->tipoDocumento == '36')DOC. COBRANZA @elseif($estCuent->tipoDocumento == '01')FACTURA @elseif($estCuent->tipoDocumento == '03')BOLETA @endif</td> --}}
+                    <td class="py-1">{{$estCuent->tipoDocumento}}</td>
+                    <td class="py-1">{{$estCuent->numeroDocumento}}</td>
+                    {{-- <td class="py-1">@if($estCuent->idAerolinea){{$estCuent->tAerolinea->razonSocial}} @else AS TRAVEL @endif</td> --}}
+                    <td class="py-1">{{$estCuent->aerolinea}}</td>
+                    <td class="py-1">{{\Carbon\Carbon::parse($estCuent->fechaEmision)->format('d-m-Y')}}</td>
+                    <td class="py-1">{{\Carbon\Carbon::parse($estCuent->fechaVencimiento)->format('d-m-Y')}}</td>
                     <td class="py-1">{{$estCuent->numeroBoleto}}</td>
                     {{-- <td class="py-1">@if($boleto->tDocumento){{$boleto->tDocumento->serie . '-' . str_pad($boleto->tDocumento->numero,8,"0",STR_PAD_LEFT)}}@else - @endif</td> --}}
                     <td class="py-1">{{$estCuent->pasajero}}</td>
                     <td class="py-1">{{$estCuent->tipoRuta}}</td>
-                    <td class="py-1">@if($estCuent->ruta){{$estCuent->ruta}} @else VARIOS @endif</td>
+                    <td class="py-1">{{$estCuent->ruta}}</td>
                     <td class="py-1">{{$estCuent->moneda}}</td>
                     <td class="py-1">{{$estCuent->tarifaNeta}}</td>
                     <td class="py-1">{{$estCuent->inafecto}}</td>
                     <td class="py-1">{{$estCuent->igv}}</td>
                     <td class="py-1">{{$estCuent->otrosImpuestos}}</td>
                     <td class="py-1">{{$estCuent->saldo}}</td>
-                    <td class="py-1">{{$estCuent->tSolicitante->nombres}}</td>
+                    <td class="py-1">{{$estCuent->solicitante}}</td>
                     
                 </tr>
                 @endforeach

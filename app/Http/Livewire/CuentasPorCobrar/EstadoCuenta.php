@@ -8,6 +8,7 @@ use App\Models\Cargo;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CargosExport;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class EstadoCuenta extends Component
 {
@@ -26,23 +27,28 @@ class EstadoCuenta extends Component
     public function render()
     {
         // $estCuentas = $this->estadoCuenta;
+        
         return view('livewire.cuentas-por-cobrar.estado-cuenta');
         
     }
 
     public function buscar(){
         $this->estadoCuentas = NULL;
-        // dd($this->estadoCuenta);
-        $this->estadoCuentas = Cargo::where('idCliente', $this->idCliente)
-                                    ->where('idEstado',1)
-                                    ->where('saldo','>',0)
-                                    ->whereBetween('fechaEmision', [$this->fechaInicio, $this->fechaFinal])
-                                    ->orderBy('fechaEmision', 'asc')
-                                    ->get();
-        // dd($this->estadoCuentas);      
+        // $this->estadoCuentas = Cargo::where('idCliente', $this->idCliente)
+        //                             ->where('idEstado',1)
+        //                             ->where('saldo','>',0)
+        //                             ->whereBetween('fechaEmision', [$this->fechaInicio, $this->fechaFinal])
+        //                             ->orderBy('fechaEmision', 'asc')
+        //                             ->get();
+        
+        $this->estadoCuentas = DB::table('vista_estadocuenta')
+                            ->where('idCliente', $this->idCliente)
+                            ->whereBetween('fechaEmision',[$this->fechaInicio, $this->fechaFinal])
+                            ->get();                            
     }
 
     public function exportar(){
+        $this->estadoCuentas = NULL;
         return Excel::download(new CargosExport($this->idCliente,$this->fechaInicio,$this->fechaFinal),'Estado-de-cuentas.xlsx');
     }
 }

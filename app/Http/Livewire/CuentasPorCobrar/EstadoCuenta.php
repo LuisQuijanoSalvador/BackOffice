@@ -33,18 +33,32 @@ class EstadoCuenta extends Component
     }
 
     public function buscar(){
-        $this->estadoCuentas = NULL;
+        // $this->estadoCuentas = NULL;
         // $this->estadoCuentas = Cargo::where('idCliente', $this->idCliente)
         //                             ->where('idEstado',1)
         //                             ->where('saldo','>',0)
         //                             ->whereBetween('fechaEmision', [$this->fechaInicio, $this->fechaFinal])
         //                             ->orderBy('fechaEmision', 'asc')
         //                             ->get();
+       
+        $cliente = Cliente::find($this->idCliente);
+        if($cliente){
+            if($cliente->tipoFacturacion == 1){
+                $this->estadoCuentas = DB::table('vista_estadocuenta')
+                                ->where('idCliente', $this->idCliente)
+                                ->whereBetween('fechaEmision',[$this->fechaInicio, $this->fechaFinal])
+                                ->get();
+            }else{
+                $this->estadoCuentas = DB::table('vista_estadocuenta_acumulado')
+                                ->where('idCliente', $this->idCliente)
+                                ->whereBetween('fechaEmision',[$this->fechaInicio, $this->fechaFinal])
+                                ->get();
+            }
+        }else{
+            session()->flash('error', 'Seleccione un cliente');
+        }
         
-        $this->estadoCuentas = DB::table('vista_estadocuenta')
-                            ->where('idCliente', $this->idCliente)
-                            ->whereBetween('fechaEmision',[$this->fechaInicio, $this->fechaFinal])
-                            ->get();                            
+                                    
     }
 
     public function exportar(){

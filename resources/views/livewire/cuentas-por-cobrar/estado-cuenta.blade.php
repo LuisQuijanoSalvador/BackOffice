@@ -1,10 +1,20 @@
 <div>
     {{-- To attain knowledge, add things every day; To attain wisdom, subtract things every day. --}}
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
     <div class="contenedorFiltro">
         <div class="row">
             <div class="col-md-4">
                 <label for="selectedCliente">Seleccione Cliente:</label>
-                <select name="selectedCliente" style="width: 100%; display:block;font-size: 0.9em; height:31px;" class="rounded" id="cboCliente" wire:model="idCliente">
+                <select name="selectedCliente" style="width: 100%; display:block;font-size: 0.9em; height:31px;" class="rounded" id="cboCliente" wire:model.lazy.defer="idCliente">
                     <option value="">-- Buscar Cliente --</option>
                     @foreach ($clientes as $cliente)
                         <option value="{{$cliente->id}}">{{$cliente->razonSocial}}</option>
@@ -21,7 +31,9 @@
             </div>
             <div class="col-md-2">
                 <br>
-                <button type="button" class="btn btn-primary rounded" wire:click='buscar'>Buscar</button>
+                <button type="button" class="btn btn-primary rounded" wire:click='buscar'>
+                    Buscar
+                </button>
             </div>
         </div>
     </div>

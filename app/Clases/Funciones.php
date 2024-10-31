@@ -103,6 +103,7 @@ class Funciones
     public function anularCPE($arrayData){
         $client = new Client();
         $jsonData = json_encode($arrayData, JSON_PRETTY_PRINT);
+        dd("Llego!!!");
         // dd($jsonData);
         $respuesta = $client->request('POST', 'https://int.sendaefact.pe/webservice/anular_comprobante', [
         'headers' => [

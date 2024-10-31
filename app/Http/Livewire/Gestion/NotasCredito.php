@@ -118,7 +118,7 @@ class NotasCredito extends Component
         $documento->afecto = $this->documento->afecto;
         $documento->inafecto = $this->documento->inafecto;
         $documento->exonerado = 0;
-        $documento->igv = $this->monto - $documento->afecto;
+        $documento->igv = $this->documento->igv;
         $documento->otrosImpuestos = 0;
         $documento->total = $this->monto;
         $documento->totalLetras = $totalLetras;

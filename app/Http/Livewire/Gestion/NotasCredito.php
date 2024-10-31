@@ -135,12 +135,10 @@ class NotasCredito extends Component
         $documento->usuarioModificacion = auth()->user()->id;
 
         if($documento->inafecto > 0 && $documento->afecto > 0 && $documento->otrosImpuestos == 0){
-            dd("mixto");
             $dataJson = $this->enviaCPEMixto($documento);
             $jsonDoc = json_encode($dataJson, JSON_PRETTY_PRINT);
             
         }else{
-            dd("Normal");
             $dataJson = $this->enviaCPE($documento);
             $jsonDoc = json_encode($dataJson, JSON_PRETTY_PRINT);
             

@@ -115,7 +115,7 @@ class NotasCredito extends Component
         $documento->fechaEmision = $this->fechaEmision;
         $documento->fechaVencimiento = $this->fechaEmision;
         $documento->detraccion = 0;
-        $documento->afecto = $this->afecto;
+        $documento->afecto = $this->documento->afecto;
         $documento->inafecto = $this->documento->inafecto;
         $documento->exonerado = 0;
         $documento->igv = $this->monto - $documento->afecto;

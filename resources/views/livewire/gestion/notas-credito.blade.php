@@ -62,6 +62,9 @@
                         Afecto
                     </th>
                     <th scope="col" class="py-1">
+                        Inafecto
+                    </th>
+                    <th scope="col" class="py-1">
                         IGV
                     </th>
                     <th scope="col" class="py-1">
@@ -82,6 +85,7 @@
                             <td class="py-1">{{$documento->tcliente->razonSocial}}</td>
                             <td class="py-1">{{\Carbon\Carbon::parse($documento->fechaEmision)->format('d-m-Y')}}</td>
                             <td class="py-1">{{$documento->afecto}}</td>
+                            <td class="py-1">{{$documento->inafecto}}</td>
                             <td class="py-1">{{$documento->igv}}</td>
                             <td class="py-1">{{$documento->total}}</td>
                             <td class="py-1">{{$documento->tEstado->descripcion}}</td>

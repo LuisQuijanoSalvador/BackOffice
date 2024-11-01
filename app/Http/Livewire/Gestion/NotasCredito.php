@@ -524,7 +524,7 @@ class NotasCredito extends Component
                 ]
             ]
         ];
-        DD($dataToSend);
+        // DD($dataToSend);
 
         $funciones = new Funciones();
 

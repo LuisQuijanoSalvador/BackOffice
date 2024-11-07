@@ -115,12 +115,29 @@ class NotasCredito extends Component
         $documento->fechaEmision = $this->fechaEmision;
         $documento->fechaVencimiento = $this->fechaEmision;
         $documento->detraccion = 0;
-        $documento->afecto = $this->documento->afecto;
-        $documento->inafecto = $this->documento->inafecto;
-        $documento->exonerado = 0;
-        $documento->igv = $this->documento->igv;
-        $documento->otrosImpuestos = 0;
-        $documento->total = $this->monto;
+        //Revisar
+        // $documento->afecto = $this->documento->afecto;
+        // $documento->inafecto = $this->documento->inafecto;
+        // $documento->exonerado = 0;
+        // $documento->igv = $this->documento->igv;
+        // $documento->otrosImpuestos = 0;
+        // $documento->total = $this->monto;
+        if($this->documento->inafecto > 0){
+            $documento->afecto = $this->documento->afecto;
+            $documento->inafecto = $this->documento->inafecto;
+            $documento->exonerado = 0;
+            $documento->igv = $this->documento->igv;
+            $documento->otrosImpuestos = 0;
+            $documento->total = $this->monto;
+        }else{
+            $documento->afecto = round($this->monto / 1.18, 2);
+            $documento->inafecto = $this->documento->inafecto;
+            $documento->exonerado = 0;
+            $documento->igv = $this->monto - $documento->afecto;
+            $documento->otrosImpuestos = 0;
+            $documento->total = $this->monto;
+        }
+        //---
         $documento->totalLetras = $totalLetras;
         $documento->idMedioPago = 8;
         $documento->glosa = $this->glosa;

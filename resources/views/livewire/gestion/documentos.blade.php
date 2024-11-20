@@ -237,7 +237,7 @@
                     </div>
                     <hr>
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="cboCliente" class="form-label">Cliente:</label>
                             <select disabled name="selectedCliente" style="width: 100%; display:block;font-size: 0.8em;" class="" id="cboCliente" wire:model="idCliente">
                                 @foreach ($clientes as $cliente)
@@ -252,6 +252,10 @@
                         <div class="col-md-2">
                             <label for="txtDocIdentidad" class="">Documento Identidad: </label>
                             <input disabled type="text" class="uTextBox" id="txtDocIdentidad" wire:model.lazy.defer="numeroDocumentoIdentidad">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="txtTipoDoc" class="">Tipo: </label>
+                            <input disabled type="text" class="uTextBox" id="txtTipoDoc" wire:model.lazy.defer="tipoDocIdentidad">
                         </div>
                     </div>
                     <hr>

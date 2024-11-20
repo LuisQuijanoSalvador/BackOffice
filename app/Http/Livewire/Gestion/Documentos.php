@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Documento;
 use App\Models\TipoDocumento;
+use App\Models\TipoDocumentoIdentidad;
 use App\Models\Estado;
 use App\Models\Cliente;
 use Carbon\Carbon;
@@ -25,7 +26,8 @@ class Documentos extends Component
     public $direction = 'desc';
     public $filtroCliente;
 
-    public $idRegistro,$idCliente,$razonSocial,$direccionFiscal,$numeroDocumentoIdentidad,$idTipoDocumento,
+    public $idRegistro,$idCliente,$razonSocial,$direccionFiscal,$numeroDocumentoIdentidad,$tipoDocIdentidad,
+    $idTipoDocumento,
     $tipoDocumento,$serie,$numero,$idMoneda,$moneda,$fechaEmision,$fechaVencimiento,$detraccion,$afecto,
     $inafecto,$exonerado,$igv,$otrosImpuestos,$total,$totalLetras,$glosa,$numeroFile,$tipoServicio,
     $documentoReferencia,$idMotivoNC,$idMotivoND,$tipoCambio,$idEstado,$respuestaSunat,$usuarioCreacion,
@@ -121,6 +123,9 @@ class Documentos extends Component
 
     public function ver($id){
         $documento = Documento::find($id);
+        $cliente = Cliente::find($documento->idCliente);
+        $tipoDocI = TipoDocumentoIdentidad::find($cliente->tipoDocumentoIdentidad);
+        $this->tipoDocIdentidad = strtoupper($tipoDocI->descripcion);
         $this->idRegistro = $documento->id;
         $this->idCliente = $documento->idCliente;
         $this->razonSocial = $documento->razonSocial;

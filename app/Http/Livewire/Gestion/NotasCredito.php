@@ -163,7 +163,7 @@ class NotasCredito extends Component
         
         
 
-        $documento->save();
+        $doc-umento->save();
         $funciones->grabarCorrelativo('NOTA DE CREDITO',$numComprobante);
 
         if ($this->respSenda['type'] == 'success') {
@@ -465,10 +465,10 @@ class NotasCredito extends Component
                     "valorunit" => $comprobante->afecto,
                     "valorventabruto" => $comprobante->afecto,
                     "valorventa" => $comprobante->afecto,
-                    "preciounitbruto" => $comprobante->afecto + $comprobante->igv,//$comprobante->total,
-                    "preciounit" => $comprobante->afecto + $comprobante->igv,//$comprobante->total,
-                    "precioventa" => $comprobante->afecto + $comprobante->igv,//$comprobante->total,
-                    "precioventabruto" => $comprobante->afecto + $comprobante->igv,//$comprobante->total,
+                    "preciounitbruto" => round($comprobante->afecto + $comprobante->igv,2),//$comprobante->total,
+                    "preciounit" => round($comprobante->afecto + $comprobante->igv,2),//$comprobante->total,
+                    "precioventa" => round($comprobante->afecto + $comprobante->igv,2),//$comprobante->total,
+                    "precioventabruto" => round($comprobante->afecto + $comprobante->igv,2),//$comprobante->total,
                     "igv" => $comprobante->igv,
                     "porc_igv" => "18.00",
                     "isc" => "0.00",

@@ -164,7 +164,7 @@ class NotasCredito extends Component
         
         
 
-        $doc-umento->save();
+        $documento->save();
         $funciones->grabarCorrelativo('NOTA DE CREDITO',$numComprobante);
 
         if ($this->respSenda['type'] == 'success') {

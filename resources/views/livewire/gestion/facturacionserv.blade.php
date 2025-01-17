@@ -199,7 +199,7 @@
                 @foreach ($this->servicios as $servicio)
     
                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                    <td class="py-1"><input type="checkbox" name="chkSelect" id="" wire:model="selectedRows" value="{{ $servicio->id }}"></td>
+                    <td class="py-1"><input type="checkbox" name="chkSelect" id="" wire:model.lazy.defer="selectedRows" value="{{ $servicio->id }}"></td>
                     <td class="py-1">{{$servicio->id}}</td>
                     <td class="py-1">{{$servicio->numeroFile}}</td>
                     <td class="py-1">{{$servicio->tcliente->razonSocial}}</td>

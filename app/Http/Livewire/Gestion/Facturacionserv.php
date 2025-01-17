@@ -216,7 +216,8 @@ class Facturacionserv extends Component
         $this->codigoDocumentoIdentidad = $tipoDocId->codigo;
         $this->descDocumentoIdentidad = $tipoDocId->descripcion;
 
-        $totalLetras = $numLetras->numtoletras($dataServicio->total,$this->monedaLetra);
+        // $totalLetras = $numLetras->numtoletras($dataServicio->total,$this->monedaLetra);
+        $totalLetras = $numLetras->numtoletras($this->totalTotal,$this->monedaLetra);
         
         $documento->idCliente = $dataServicio->idCliente;
         $documento->razonSocial = $dataServicio->tCliente->razonSocial;

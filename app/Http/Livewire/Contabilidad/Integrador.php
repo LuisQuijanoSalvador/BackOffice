@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\Documento;
 use App\Models\Boleto;
 use App\Models\Servicio;
+use App\Models\TipoServicio;
 use App\Models\Proveedor;
 use App\Models\Cliente;
 use App\Models\Abono;
@@ -282,7 +283,7 @@ class Integrador extends Component
                     WHERE b.IdDocumento = documentos.id LIMIT 1), '')
                 ELSE numeroDocumentoIdentidad
             END AS CodigoAnexo"))
-            ->addSelect('afecto', 'igv', 'otrosImpuestos', 'inafecto', 'exonerado', 'total','numero', 'serie','id')
+            ->addSelect('afecto', 'igv', 'otrosImpuestos', 'inafecto', 'exonerado', 'total','numero', 'serie','id','documentoReferencia')
             ->addSelect(DB::raw("CONCAT(serie, '-', numero) AS numeroDocumento"), 'fechaVencimiento', 'idEstado')
             ->whereBetween('FechaEmision', [$this->fechaIni, $this->fechaFin])
             ->where('TipoDocumento', $this->tipoDocumento)
@@ -506,7 +507,7 @@ class Integrador extends Component
                         $hoja->setCellValue('O' . $fila, 0);
                         $hoja->setCellValue('P' . $fila, 0);
                         $hoja->setCellValue('Q' . $fila, 0);
-                        $hoja->setCellValue('R' . $fila, 'FT');
+                        $hoja->setCellValue('R' . $fila, 'NA');
                         $hoja->setCellValue('S' . $fila, $documento->serie . '-' . str_pad($documento->numero, 6, "0", STR_PAD_LEFT));
                         $hoja->setCellValue('T' . $fila, date('d/m/Y', strtotime($documento->fechaEmision)));
                         $hoja->setCellValue('U' . $fila, date('d/m/Y', strtotime($documento->fechaVencimiento)));
@@ -865,6 +866,163 @@ class Integrador extends Component
                     $this->correlativo = $this->correlativo +1;
                 }
                 
+            }
+
+            if($this->tipoDocumento == '07'){
+                foreach($documentos as $documento){
+                    $tipo = "";
+                    $serie = substr($documento->documentoReferencia, 0, 4);
+                    $numRefe = ltrim(substr($documento->documentoReferencia, 4), '0'); 
+                    if(substr($serie, 0, 1) == "F"){
+                        $tipo = "FT";
+                    }else{
+                        $tipo = "BV";
+                    }
+                    $docRefe = Documento::where('numero',$numRefe)
+                                ->where('serie', $serie)
+                                ->first();
+                    $servicio = Servicio::where('idDocumento', $docRefe->id)
+                                ->first();
+                    $tipoServicio = TipoServicio::find($servicio->idTipoServicio);
+
+                    if($documento->idEstado == 1){
+                        if($documento->afecto > 0){
+                            $fechaEntero = strtotime($documento->fechaEmision);
+                            $mes = date('m',$fechaEntero);
+                            $numComprobante = $mes . str_pad($this->correlativo, 4, "0", STR_PAD_LEFT);
+                            $hoja->setCellValue('A' . $fila, '');
+                            $hoja->setCellValue('B' . $fila, $this->subdiario);
+                            $hoja->setCellValue('C' . $fila, $numComprobante);
+                            $hoja->setCellValue('D' . $fila, date('d/m/Y', strtotime($documento->fechaEmision)));
+                            $hoja->setCellValue('E' . $fila, $documento->moneda);
+                            $hoja->setCellValue('F' . $fila, $documento->glosa);
+                            $hoja->setCellValue('G' . $fila, 0);
+                            $hoja->setCellValue('H' . $fila, 'V');
+                            $hoja->setCellValue('I' . $fila, 'S');
+                            $hoja->setCellValue('J' . $fila, '');
+                            $hoja->setCellValue('K' . $fila, $tipoServicio->cuentaContableDolares);
+                            $hoja->setCellValue('L' . $fila, $documento->CodigoAnexo);
+                            $hoja->setCellValue('M' . $fila, '100');
+                            $hoja->setCellValue('N' . $fila, 'D');
+                            $hoja->setCellValue('O' . $fila, $documento->afecto);
+                            $hoja->setCellValue('P' . $fila, 0);
+                            $hoja->setCellValue('Q' . $fila, 0);
+                            $hoja->setCellValue('R' . $fila, 'NA');
+                            $hoja->setCellValue('S' . $fila, $documento->serie . '-' . str_pad($documento->numero, 6, "0", STR_PAD_LEFT));
+                            $hoja->setCellValue('T' . $fila, date('d/m/Y', strtotime($documento->fechaEmision)));
+                            $hoja->setCellValue('U' . $fila, '');
+                            $hoja->setCellValue('V' . $fila, '');
+                            $hoja->setCellValue('W' . $fila, substr($documento->glosa,0,30));
+                            $hoja->setCellValue('X' . $fila, '');
+                            $hoja->setCellValue('Y' . $fila, '');
+                            $hoja->setCellValue('Z' . $fila, $tipo);
+                            $hoja->setCellValue('AA' . $fila, $serie . '-' . str_pad($numRefe, 6, "0", STR_PAD_LEFT));
+                            $hoja->setCellValue('AB' . $fila, $docRefe->fechaEmision);
+                        }
+                        if($documento->igv > 0){
+                            $fila = $fila + 1;
+                            // dd($fila);
+                            $fechaEntero = strtotime($documento->fechaEmision);
+                            $mes = date('m',$fechaEntero);
+                            $numComprobante = $mes . str_pad($this->correlativo, 4, "0", STR_PAD_LEFT);
+                            $hoja->setCellValue('A' . $fila, '');
+                            $hoja->setCellValue('B' . $fila, $this->subdiario);
+                            $hoja->setCellValue('C' . $fila, $numComprobante);
+                            $hoja->setCellValue('D' . $fila, date('d/m/Y', strtotime($documento->fechaEmision)));
+                            $hoja->setCellValue('E' . $fila, $documento->moneda);
+                            $hoja->setCellValue('F' . $fila, $documento->glosa);
+                            $hoja->setCellValue('G' . $fila, 0);
+                            $hoja->setCellValue('H' . $fila, 'V');
+                            $hoja->setCellValue('I' . $fila, 'S');
+                            $hoja->setCellValue('J' . $fila, '');
+                            $hoja->setCellValue('K' . $fila, '401111');
+                            $hoja->setCellValue('L' . $fila, '');
+                            $hoja->setCellValue('M' . $fila, '0');
+                            $hoja->setCellValue('N' . $fila, 'D');
+                            $hoja->setCellValue('O' . $fila, $documento->igv);
+                            $hoja->setCellValue('P' . $fila, 0);
+                            $hoja->setCellValue('Q' . $fila, 0);
+                            $hoja->setCellValue('R' . $fila, 'NA');
+                            $hoja->setCellValue('S' . $fila, $documento->serie . '-' . str_pad($documento->numero, 6, "0", STR_PAD_LEFT));
+                            $hoja->setCellValue('T' . $fila, date('d/m/Y', strtotime($documento->fechaEmision)));
+                            $hoja->setCellValue('U' . $fila, '');
+                            $hoja->setCellValue('V' . $fila, '');
+                            $hoja->setCellValue('W' . $fila, substr($documento->glosa,0,30));
+                            $hoja->setCellValue('X' . $fila, '');
+                            $hoja->setCellValue('Y' . $fila, '');
+                            $hoja->setCellValue('Z' . $fila, $tipo);
+                            $hoja->setCellValue('AA' . $fila, $serie . '-' . str_pad($numRefe, 6, "0", STR_PAD_LEFT));
+                            $hoja->setCellValue('AB' . $fila, $docRefe->fechaEmision);
+                        }
+                        $fila = $fila + 1;
+                        $fechaEntero = strtotime($documento->fechaEmision);
+                        $mes = date('m',$fechaEntero);
+                        $numComprobante = $mes . str_pad($this->correlativo, 4, "0", STR_PAD_LEFT);
+                        $hoja->setCellValue('A' . $fila, '');
+                        $hoja->setCellValue('B' . $fila, $this->subdiario);
+                        $hoja->setCellValue('C' . $fila, $numComprobante);
+                        $hoja->setCellValue('D' . $fila, date('d/m/Y', strtotime($documento->fechaEmision)));
+                        $hoja->setCellValue('E' . $fila, $documento->moneda);
+                        $hoja->setCellValue('F' . $fila, $documento->glosa);
+                        $hoja->setCellValue('G' . $fila, 0);
+                        $hoja->setCellValue('H' . $fila, 'V');
+                        $hoja->setCellValue('I' . $fila, 'S');
+                        $hoja->setCellValue('J' . $fila, '');
+                        if($documento->moneda == 'US'){
+                            $hoja->setCellValue('K' . $fila, '121202');
+                        }else{
+                            $hoja->setCellValue('K' . $fila, '121201');
+                        }
+                        $hoja->setCellValue('L' . $fila, $documento->CodigoAnexo);
+                        $hoja->setCellValue('M' . $fila, '0');
+                        $hoja->setCellValue('N' . $fila, 'H');
+                        $hoja->setCellValue('O' . $fila, $documento->total);
+                        $hoja->setCellValue('P' . $fila, 0);
+                        $hoja->setCellValue('Q' . $fila, 0);
+                        $hoja->setCellValue('R' . $fila, 'NA');
+                        $hoja->setCellValue('S' . $fila, $documento->serie . '-' . str_pad($documento->numero, 6, "0", STR_PAD_LEFT));
+                        $hoja->setCellValue('T' . $fila, date('d/m/Y', strtotime($documento->fechaEmision)));
+                        $hoja->setCellValue('U' . $fila, date('d/m/Y', strtotime($documento->fechaVencimiento)));
+                        $hoja->setCellValue('V' . $fila, '');
+                        $hoja->setCellValue('W' . $fila, substr($documento->glosa,0,30));
+                        $hoja->setCellValue('X' . $fila, '');
+                        $hoja->setCellValue('Y' . $fila, '');
+                        $hoja->setCellValue('Z' . $fila, $tipo);
+                        $hoja->setCellValue('AA' . $fila, $serie . '-' . str_pad($numRefe, 6, "0", STR_PAD_LEFT));
+                        $hoja->setCellValue('AB' . $fila, $docRefe->fechaEmision);
+                    }else{
+                        // $fila = $fila + 1;
+                        // $this->correlativo = $this->correlativo +1;
+                        $fechaEntero = strtotime($documento->fechaEmision);
+                        $mes = date('m',$fechaEntero);
+                        $numComprobante = $mes . str_pad($this->correlativo, 4, "0", STR_PAD_LEFT);
+                        $hoja->setCellValue('A' . $fila, '');
+                        $hoja->setCellValue('B' . $fila, $this->subdiario);
+                        $hoja->setCellValue('C' . $fila, $numComprobante);
+                        $hoja->setCellValue('D' . $fila, date('d/m/Y', strtotime($documento->fechaEmision)));
+                        $hoja->setCellValue('E' . $fila, $documento->moneda);
+                        $hoja->setCellValue('F' . $fila, 'ANULADA NA-'.$documento->serie . '-' . str_pad($documento->numero, 6, "0", STR_PAD_LEFT));
+                        $hoja->setCellValue('G' . $fila, 0);
+                        $hoja->setCellValue('H' . $fila, 'V');
+                        $hoja->setCellValue('I' . $fila, 'S');
+                        $hoja->setCellValue('J' . $fila, '');
+                        $hoja->setCellValue('K' . $fila, '121202');
+                        $hoja->setCellValue('L' . $fila, '0001');
+                        $hoja->setCellValue('M' . $fila, '0');
+                        $hoja->setCellValue('N' . $fila, 'D');
+                        $hoja->setCellValue('O' . $fila, 0);
+                        $hoja->setCellValue('P' . $fila, 0);
+                        $hoja->setCellValue('Q' . $fila, 0);
+                        $hoja->setCellValue('R' . $fila, 'NA');
+                        $hoja->setCellValue('S' . $fila, $documento->serie . '-' . str_pad($documento->numero, 6, "0", STR_PAD_LEFT));
+                        $hoja->setCellValue('T' . $fila, date('d/m/Y', strtotime($documento->fechaEmision)));
+                        $hoja->setCellValue('U' . $fila, date('d/m/Y', strtotime($documento->fechaVencimiento)));
+                        $hoja->setCellValue('V' . $fila, '');
+                        $hoja->setCellValue('W' . $fila, substr('ANULADA NA-'.$documento->serie . '-' . str_pad($documento->numero, 6, "0", STR_PAD_LEFT),0,30));
+                    }
+                    $fila++;
+		            $this->correlativo = $this->correlativo +1;
+                }
             }
             
             // Guardar el archivo

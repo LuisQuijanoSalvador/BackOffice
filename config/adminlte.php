@@ -528,6 +528,10 @@ return [
                     'route' => 'rptMargenes'
                 ],
                 [
+                    'text' => 'Comision Proveedor',
+                    'route' => 'rptComisionConsolidador'
+                ],
+                [
                     'text' => 'Conciliacion TC',
                     'route' => 'rptConciliacion'
                 ],

@@ -49,17 +49,17 @@
         @if($ventass)
             @foreach ($ventass as $venta)
                 <tr>
-                    <td class="py-1">{{$venta->Origen}}</td>
-                    <td class="py-1">{{$venta->Tipo}}</td>
-                    <td class="py-1">{{$venta->NumeroBoleto}}</td>
-                    <td class="py-1">{{$venta->FILE}}</td>
-                    <td class="py-1">{{$venta->Cliente}}</td>
-                    <td class="py-1">{{$venta->Pasajero}}</td>
-                    <td class="py-1">{{$venta->Documento}}</td>
-                    <td class="py-1">{{$venta->Counter}}</td>
-                    <td class="py-1">{{\Carbon\Carbon::parse($venta->FechaEmision)->format('d-m-Y')}}</td>
-                    <td class="py-1">{{$venta->Ruta}}</td>
-                    <td class="py-1">{{$venta->montoComision}}</td>
+                    <td class="py-1">{{$venta['Origen']}}</td>
+                    <td class="py-1">{{$venta['Tipo']}}</td>
+                    <td class="py-1">{{$venta['NumeroBoleto']}}</td>
+                    <td class="py-1">{{$venta['FILE']}}</td>
+                    <td class="py-1">{{$venta['Cliente']}}</td>
+                    <td class="py-1">{{$venta['Pasajero']}}</td>
+                    <td class="py-1">{{$venta['Documento']}}</td>
+                    <td class="py-1">{{$venta['Counter']}}</td>
+                    <td class="py-1">{{\Carbon\Carbon::parse($venta['FechaEmision'])->format('d-m-Y')}}</td>
+                    <td class="py-1">{{$venta['Ruta']}}</td>
+                    <td class="py-1">{{$venta['montoComision']}}</td>
                 </tr>
             @endforeach
         @endif

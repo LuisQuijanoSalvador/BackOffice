@@ -11,24 +11,18 @@ use Illuminate\Support\Facades\DB;
 
 class ComiconsExport implements FromView, WithStyles
 {
-    public $fechaInicio, $fechaFin;
+    public $comi;
 
-    public function __construct($fecIni, $fecFin)
+    public function __construct($comisiones)
     {
-        $this->fechaInicio = $fecIni;
-        $this->fechaFin = $fecFin;
+        $this->comi = $comisiones;
     }
 
     public function view(): View
     {
-        if($this->fechaInicio and $this->fechaFin){
-            return view('exports.reportes.comisionCons', [
-                'ventass' => DB::table('vista_comisionConsolidador')
-                ->whereBetween('FechaEmision',[$this->fechaInicio, $this->fechaFin])
-                ->orderby('FechaEmision')
-                ->get()
-            ]);
-        }
+        return view('exports.reportes.comisionCons', [
+            'ventass' => $this->comi
+        ]);
     }
 
     public function styles(Worksheet $sheet)

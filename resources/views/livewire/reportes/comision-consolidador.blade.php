@@ -1,6 +1,30 @@
 <div>
     {{-- Be like water. --}}
     <div class="row">
+        <p>Filtrar por:</p>
+        <div style="display: flex; gap: 10px;">
+            <label>
+                <input type="radio" wire:model="filtro" value="fechas"> Fechas
+            </label>
+            <label>
+                <input type="radio" wire:model="filtro" value="cliente"> Cliente
+            </label>
+            <label>
+                <input type="radio" wire:model="filtro" value="counter"> Counter
+            </label>
+            <label>
+                <input type="radio" wire:model="filtro" value="pasajero"> Pasajero
+            </label>
+            <label>
+                <input type="radio" wire:model="filtro" value="boleto"> Boleto
+            </label>
+            <label>
+                <input type="radio" wire:model="filtro" value="file"> File
+            </label>
+        </div>
+    </div>
+    <hr>
+    <div class="row" style="display: {{ $filtro === 'fechas' ? 'flex' : 'none' }};">
         <div class="col-md-2">
             <p style="text-align:right">F. inicio:</p>
         </div>
@@ -12,6 +36,52 @@
         </div>
         <div class="col-md-2">
             <input type="date" wire:model.lazy.defer="fechaFin" id="fechaFin">
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-primary" wire:click="filtrar" >Filtrar</button>
+        </div>
+    </div>
+    <div class="row" style="display: {{ $filtro === 'cliente' ? 'flex' : 'none' }};">
+        <select name="selectedCliente" style="width: 70%; display:block;font-size: 0.9em; height:31px;" class="rounded" id="cboCliente" wire:model="filtroCliente">
+            <option value="">-- Filtrar por Cliente --</option>
+            @foreach ($clientes as $cliente)
+                <option value="{{$cliente->id}}">{{$cliente->razonSocial}}</option>
+            @endforeach
+        </select>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-primary" wire:click="filtrar" >Filtrar</button>
+        </div>
+    </div>
+    <div class="row" style="display: {{ $filtro === 'counter' ? 'flex' : 'none' }};">
+        <select name="selectedCliente" style="width: 50%; display:block;font-size: 0.9em; height:31px;" class="rounded" id="cboCliente" wire:model="filtroCounter">
+            <option value="">-- Filtrar por Counter --</option>
+            @foreach ($counters as $counter)
+                <option value="{{$counter->id}}">{{$counter->nombre}}</option>
+            @endforeach
+        </select>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-primary" wire:click="filtrar" >Filtrar</button>
+        </div>
+    </div>
+    <div class="row" style="display: {{ $filtro === 'pasajero' ? 'flex' : 'none' }};">
+        <div class="col-md-6">
+            <input type="text" name="" id="txtPasajero" wire:model="filtroPasajero">
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-primary" wire:click="filtrar" >Filtrar</button>
+        </div>
+    </div>
+    <div class="row" style="display: {{ $filtro === 'boleto' ? 'flex' : 'none' }};">
+        <div class="col-md-6">
+            <input type="text" name="" id="txtBoleto" wire:model="filtroBoleto">
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-primary" wire:click="filtrar" >Filtrar</button>
+        </div>
+    </div>
+    <div class="row" style="display: {{ $filtro === 'file' ? 'flex' : 'none' }};">
+        <div class="col-md-6">
+            <input type="text" name="" id="txtFile" wire:model="filtroFile">
         </div>
         <div class="col-md-2">
             <button type="button" class="btn btn-primary" wire:click="filtrar" >Filtrar</button>

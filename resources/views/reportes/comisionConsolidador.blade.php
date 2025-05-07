@@ -1,7 +1,7 @@
 
 @extends('adminlte::page')
 
-@section('title', 'Reporte - Margenes')
+@section('title', 'Reporte - Comisiones')
 
 @section('content_header')
     <h3>Reporte - Comisiones</h3>

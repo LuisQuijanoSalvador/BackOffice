@@ -85,7 +85,8 @@ return [
     |
     */
 
-    'table' => 'sessions',
+    // 'table' => 'sessions',
+    'table' => 'sessions_backoffice',
 
     /*
     |--------------------------------------------------------------------------
@@ -126,10 +127,11 @@ return [
     |
     */
 
-    'cookie' => env(
-        'SESSION_COOKIE',
-        Str::slug(env('APP_NAME', 'laravel'), '_').'_session'
-    ),
+    // 'cookie' => env(
+    //     'SESSION_COOKIE',
+    //     Str::slug(env('APP_NAME', 'laravel'), '_').'_session'
+    // ),
+    'cookie' => 'backoffice_session',
 
     /*
     |--------------------------------------------------------------------------

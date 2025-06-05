@@ -576,6 +576,7 @@ class Boletos extends Component
         $boleto->tipoCambio = $this->tipoCambio;
         $boleto->idMoneda = $this->idMoneda;
         $boleto->tarifaNeta = $this->tarifaNeta;
+        $boleto->inafecto = $this->inafecto;
         $boleto->igv = $this->igv;
         $boleto->otrosImpuestos = $this->otrosImpuestos;
         $boleto->xm = $this->xm;

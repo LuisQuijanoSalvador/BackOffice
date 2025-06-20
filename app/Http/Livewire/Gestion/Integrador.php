@@ -968,6 +968,21 @@ class Integrador extends Component
                     }
                 }
             }
+            if(!$this->idCliente){
+                $posClientePSP = strpos($linea,"P");
+                if ($posClientePSP !== false){
+                    if(strlen($linea) == 10){
+                        $psp = substr($linea,1,9);
+                        $oCliente = Cliente::where('numeroDocumentoIdentidad',$psp)->first();
+                        if ($oCliente) {
+                            $this->idCliente = $oCliente->id;
+                            $this->idTipoFacturacion = $oCliente->tipoFacturacion;
+                            // $this->idArea = $oCliente->area;
+                            $this->idVendedor = $oCliente->vendedor;
+                        }
+                    }
+                }
+            }
 
             //Obtener Ruta / Destino
             $posRuta = strpos($linea,"Fare Calculation :");

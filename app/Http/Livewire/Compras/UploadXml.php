@@ -3,7 +3,7 @@
 namespace App\Http\Livewire\Compras;
 
 use Livewire\Component;
-use Livewire\WithFileUploads; // Importar el trait para subida de archivos
+use Livewire\WithFileUploads;
 use App\Models\Proveedor;
 use App\Models\TipoDocumento;
 use App\Models\Compra;
@@ -11,8 +11,8 @@ use App\Models\CompraDetalle;
 use App\Models\Estado;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use SimpleXMLElement; // Para parsear el XML
-use Carbon\Carbon; // Para manejar fechas
+use SimpleXMLElement;
+use Carbon\Carbon;
 
 class UploadXml extends Component
 {
@@ -21,22 +21,21 @@ class UploadXml extends Component
     public $xmlFile;
     public $message = '';
     public $error = '';
-    public $loading = false; // Para mostrar un spinner de carga
+    public $loading = false;
 
     // Mapeo de tipos de documento UBL a tus IDs de TipoDocumento
-    // DEBES AJUSTAR ESTO SEGÚN LOS ID'S DE TU TABLA TIPO_DOCUMENTOS
+    // POR FAVOR, ASEGÚRATE QUE ESTOS ID'S COINCIDAN CON TU TABLA TIPO_DOCUMENTOS
     protected $documentTypeMap = [
-        '01' => 1, // Factura
-        '03' => 2, // Boleta de Venta (menos común en compras, pero puede existir)
-        '07' => 3, // Nota de Crédito (para ajustes en compras)
-        '08' => 4, // Nota de Débito (para ajustes en compras)
-        // Agrega más si tienes otros tipos de documentos relevantes en tu BD
+        '01' => 1, // Ejemplo: Factura
+        '03' => 2, // Ejemplo: Boleta de Venta
+        '07' => 3, // Ejemplo: Nota de Crédito
+        '08' => 4, // Ejemplo: Nota de Débito
     ];
 
     public function processXml()
     {
-        $this->reset(['message', 'error']); // Limpiar mensajes anteriores
-        $this->loading = true; // Mostrar spinner
+        $this->reset(['message', 'error']);
+        $this->loading = true;
 
         $this->validate([
             'xmlFile' => 'required|file|mimes:xml|max:5120', // Máx 5MB
@@ -48,60 +47,98 @@ class UploadXml extends Component
         ]);
 
         try {
-            // Obtener el contenido del archivo subido
             $xmlContent = $this->xmlFile->get();
-
-            // Cargar el XML
             $xml = new SimpleXMLElement($xmlContent);
 
-            // Registrar los namespaces para poder hacer xpath correctamente
-            // Estos son namespaces comunes en el UBL peruano
+            // Registrar namespaces CLAVE, incluyendo el namespace por defecto 'i'
             $xml->registerXPathNamespace('cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
             $xml->registerXPathNamespace('cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2');
             $xml->registerXPathNamespace('ext', 'urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2');
-            $xml->registerXPathNamespace('udt', 'urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2');
-            $xml->registerXPathNamespace('ccts', 'urn:un:unece:uncefact:data:specification:CoreComponentTypeSchemaModule:2');
-            $xml->registerXPathNamespace('ds', 'http://www.w3.org/2000/09/xmldsig#'); // Para firma digital
+            $xml->registerXPathNamespace('i', 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2'); // Namespace por defecto para <Invoice>
+            $xml->registerXPathNamespace('cn', 'urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2'); // Para Notas de Crédito
+            $xml->registerXPathNamespace('dn', 'urn:oasis:names:specification:ubl:schema:xsd:DebitNote-2'); // Para Notas de Débito
+            // No es necesario registrar 'ds', 'qdt', 'udt' si no los usarás en XPath
 
-            // Extraer datos de la cabecera del documento
-            $documentType = (string)$xml->xpath('//cbc:InvoiceTypeCode')[0] ?? ''; // Para Factura
-            if (empty($documentType)) {
-                 $documentType = (string)$xml->xpath('//cbc:CreditNoteTypeCode')[0] ?? ''; // Para Nota Crédito
+            // Depuración: Asegurarse que el XML se cargó y los namespaces están OK
+            // Log::info('XML Content: ' . $xmlContent);
+
+
+            // --- Extracción de Datos de Cabecera (más robusta) ---
+
+            // Tipo de Documento: Puede ser Invoice, CreditNote, DebitNote, etc.
+            $documentTypeNodes = $xml->xpath('//cbc:InvoiceTypeCode | //cbc:CreditNoteTypeCode | //cbc:DebitNoteTypeCode');
+            $documentType = !empty($documentTypeNodes) ? (string)$documentTypeNodes[0] : '';
+
+            // Serie y Número
+            $idNodes = $xml->xpath('//cbc:ID');
+            $serieNumero = !empty($idNodes) ? (string)$idNodes[0] : '';
+            list($serie, $numero) = array_pad(explode('-', $serieNumero), 2, ''); // array_pad para evitar error si no hay '-'
+
+            // Fecha de Emisión
+            $issueDateNodes = $xml->xpath('//cbc:IssueDate');
+            $fechaEmision = !empty($issueDateNodes) ? (string)$issueDateNodes[0] : '';
+
+            // Moneda
+            $currencyCodeNodes = $xml->xpath('//cbc:DocumentCurrencyCode');
+            $moneda = !empty($currencyCodeNodes) ? (string)$currencyCodeNodes[0] : 'PEN';
+
+
+            // --- Datos del Proveedor (AccountingSupplierParty) ---
+            // Asegurarse de tomar el RUC y Razón Social del emisor (Supplier)
+            $proveedorRucNodes = $xml->xpath('//cac:AccountingSupplierParty/cac:Party/cac:PartyIdentification/cbc:ID[@schemeID="6"]');
+            $proveedorRuc = !empty($proveedorRucNodes) ? (string)$proveedorRucNodes[0] : '';
+
+            $proveedorRazonSocialNodes = $xml->xpath('//cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cbc:RegistrationName');
+            $proveedorRazonSocial = !empty($proveedorRazonSocialNodes) ? (string)$proveedorRazonSocialNodes[0] : '';
+
+
+            // --- Montos (LegalMonetaryTotal y TaxTotal) ---
+            $subTotalNodes = $xml->xpath('//cac:LegalMonetaryTotal/cbc:LineExtensionAmount'); // Valor de venta sin impuestos
+            $subTotal = !empty($subTotalNodes) ? floatval((string)$subTotalNodes[0]) : 0;
+
+            // IGV: Buscar el TaxAmount del TaxTotal principal (el que no está dentro de TaxSubtotal o es el consolidado)
+            // Ojo: Para comprobantes inafectos/exonerados, el IGV es 0 y el código tributario es 9998, 9997, etc.
+            $igvNodes = $xml->xpath('//cac:TaxTotal/cbc:TaxAmount[@currencyID="' . $moneda . '"]');
+            $igv = !empty($igvNodes) ? floatval((string)$igvNodes[0]) : 0;
+
+
+            // Total: Siempre es PayableAmount
+            $totalNodes = $xml->xpath('//cac:LegalMonetaryTotal/cbc:PayableAmount');
+            $total = !empty($totalNodes) ? floatval((string)$totalNodes[0]) : 0;
+
+            // Log para verificar los datos extraídos
+            Log::info("XML Data Extracted: " . json_encode([
+                'documentType' => $documentType,
+                'serie' => $serie,
+                'numero' => $numero,
+                'fechaEmision' => $fechaEmision,
+                'moneda' => $moneda,
+                'proveedorRuc' => $proveedorRuc,
+                'proveedorRazonSocial' => $proveedorRazonSocial,
+                'subTotal' => $subTotal,
+                'igv' => $igv,
+                'total' => $total,
+            ]));
+
+
+            // Validaciones
+            if (empty($serie) || empty($numero)) {
+                $this->error = 'No se pudo extraer la serie y/o el número del documento del XML.';
+                $this->loading = false;
+                return;
             }
-             if (empty($documentType)) {
-                 $documentType = (string)$xml->xpath('//cbc:DebitNoteTypeCode')[0] ?? ''; // Para Nota Débito
-             }
-            // Agrega más tipos si es necesario (ej. boletas si las procesaras)
 
-
-            $serieNumero = (string)$xml->xpath('//cbc:ID')[0] ?? ''; // Ejemplo: F001-00000001
-            list($serie, $numero) = explode('-', $serieNumero);
-
-            $fechaEmision = (string)$xml->xpath('//cbc:IssueDate')[0] ?? '';
-
-            // Datos del Proveedor (Emisor del CPE)
-            $proveedorRuc = (string)$xml->xpath('//cac:Party[cac:PartyIdentification/cbc:ID/@schemeID="6"]/cac:PartyIdentification/cbc:ID')[0] ?? '';
-            $proveedorRazonSocial = (string)$xml->xpath('//cac:Party[cac:PartyIdentification/cbc:ID/@schemeID="6"]/cac:PartyLegalEntity/cbc:RegistrationName')[0] ?? '';
-
-            // Montos
-            $subTotal = (string)$xml->xpath('//cac:LegalMonetaryTotal/cbc:PayableAmount')[0] ?? 0;
-            $igv = (string)$xml->xpath('//cac:TaxTotal[cac:TaxSubtotal/cac:TaxCategory/cac:TaxScheme/cbc:ID="1000"]/cbc:TaxAmount')[0] ?? 0;
-            $total = (string)$xml->xpath('//cac:LegalMonetaryTotal/cbc:PayableAmount')[0] ?? 0; // Total
-            $moneda = (string)$xml->xpath('//cbc:DocumentCurrencyCode')[0] ?? 'PEN'; // Moneda del documento
-
-            // Convertir a float
-            $subTotal = floatval($subTotal);
-            $igv = floatval($igv);
-            $total = floatval($total);
+            if (empty($proveedorRuc)) {
+                 $this->error = 'No se pudo extraer el RUC del proveedor del XML.';
+                 $this->loading = false;
+                 return;
+            }
 
             // Buscar Proveedor
-            $proveedor = Proveedor::where('ruc', $proveedorRuc)->first();
+            $proveedor = Proveedor::where('numeroDocumentoIdentidad', $proveedorRuc)->first();
 
             if (!$proveedor) {
-                // Si el proveedor no existe, puedes decidir:
-                // 1. Mostrar un error para que el usuario lo registre primero.
-                // 2. Crear automáticamente el proveedor (esto requeriría más campos en el XML para el proveedor).
-                $this->error = 'Proveedor con RUC ' . $proveedorRuc . ' no encontrado. Por favor, registre al proveedor antes de subir la compra.';
+                $this->error = 'Proveedor con RUC ' . $proveedorRuc . ' no encontrado en la base de datos. Por favor, registre al proveedor antes de subir la compra.';
                 $this->loading = false;
                 return;
             }
@@ -110,13 +147,13 @@ class UploadXml extends Component
             $tipoDocumentoId = $this->documentTypeMap[$documentType] ?? null;
 
             if (is_null($tipoDocumentoId)) {
-                $this->error = 'Tipo de documento UBL (' . $documentType . ') no mapeado en el sistema.';
+                $this->error = 'Tipo de documento UBL (' . $documentType . ') no mapeado en el sistema. Asegúrese de que el tipo de documento del XML esté configurado en su "$documentTypeMap" del componente.';
                 $this->loading = false;
                 return;
             }
 
-            // Obtener estado 'Activo' (asumiendo que siempre iniciamos una compra activa)
-            $estadoActivo = Estado::where('nombre', 'Activo')->first();
+            // Obtener estado 'Activo'
+            $estadoActivo = Estado::where('descripcion', 'Activo')->first();
             if (!$estadoActivo) {
                  $this->error = 'Estado "Activo" no encontrado en la base de datos. Por favor, cree el estado.';
                  $this->loading = false;
@@ -133,28 +170,42 @@ class UploadXml extends Component
                     'serie'            => $serie,
                     'numero'           => $numero,
                     'idProveedor'      => $proveedor->id,
-                    'idCliente'        => null, // No se suele incluir en XML de compra
-                    'numeroFile'       => null, // No se suele incluir en XML
-                    'formaPago'        => 'No especificado XML', // O un valor por defecto
+                    'idCliente'        => 132,
+                    'numeroFile'       => null,
+                    'formaPago'        => 'Contado', // Tomado del XML, o si no, un valor por defecto
                     'fechaEmision'     => Carbon::parse($fechaEmision),
                     'moneda'           => $moneda,
                     'subTotal'         => $subTotal,
                     'igv'              => $igv,
                     'total'            => $total,
-                    'totalLetras'      => 'Generar en cliente', // Esto es complejo de sacar del XML, mejor generarlo después
-                    'observacion'      => 'Registrada desde XML',
+                    'totalLetras'      => '', // Esto es complejo de sacar del XML, mejor generarlo después
+                    'observacion'      => 'Registrada desde XML. Emisor: ' . $proveedorRazonSocial,
                     'estado'           => $estadoActivo->id,
-                    'usuarioCreacion'  => auth()->id(), // Asigna el usuario logueado
+                    'usuarioCreacion'  => auth()->id(),
                     'usuarioModificacion' => auth()->id(),
                 ]);
 
                 // Extraer y crear detalles de la compra
-                $lineas = $xml->xpath('//cac:InvoiceLine | //cac:CreditNoteLine | //cac:DebitNoteLine'); // Para diferentes tipos de documentos
+                // La XPath 'InvoiceLine' es para Facturas. Si el documento es NC/ND, buscar 'CreditNoteLine'/'DebitNoteLine'.
+                $lineas = $xml->xpath('//cac:InvoiceLine | //cac:CreditNoteLine | //cac:DebitNoteLine');
+
+                if (empty($lineas)) {
+                    // Si no se encuentran líneas, podría ser un documento sin detalles (raro para facturas)
+                    Log::warning('No se encontraron líneas de detalle en el XML para la compra ' . $serieNumero);
+                }
+
                 foreach ($lineas as $linea) {
-                    $cantidad = (string)$linea->xpath('.//cbc:InvoicedQuantity')[0] ?? (string)$linea->xpath('.//cbc:CreditedQuantity')[0] ?? (string)$linea->xpath('.//cbc:DebitedQuantity')[0] ?? 1;
-                    $unidadMedida = (string)$linea->xpath('.//cbc:InvoicedQuantity/@unitCode')[0] ?? (string)$linea->xpath('.//cbc:CreditedQuantity/@unitCode')[0] ?? (string)$linea->xpath('.//cbc:DebitedQuantity/@unitCode')[0] ?? 'NIU';
-                    $descripcion = (string)$linea->xpath('.//cac:Item/cbc:Description')[0] ?? 'Sin descripción';
-                    $valorUnitario = (string)$linea->xpath('.//cac:Price/cbc:PriceAmount')[0] ?? 0;
+                    $cantidadNodes = $linea->xpath('.//cbc:InvoicedQuantity | .//cbc:CreditedQuantity | .//cbc:DebitedQuantity');
+                    $cantidad = !empty($cantidadNodes) ? (string)$cantidadNodes[0] : '1';
+
+                    $unidadMedidaNodes = $linea->xpath('.//cbc:InvoicedQuantity/@unitCode | .//cbc:CreditedQuantity/@unitCode | .//cbc:DebitedQuantity/@unitCode');
+                    $unidadMedida = !empty($unidadMedidaNodes) ? (string)$unidadMedidaNodes[0] : 'NIU';
+
+                    $descripcionNodes = $linea->xpath('.//cac:Item/cbc:Description');
+                    $descripcion = !empty($descripcionNodes) ? (string)$descripcionNodes[0] : 'Sin descripción';
+
+                    $valorUnitarioNodes = $linea->xpath('.//cac:Price/cbc:PriceAmount');
+                    $valorUnitario = !empty($valorUnitarioNodes) ? (string)$valorUnitarioNodes[0] : '0';
 
                     $compra->detalles()->create([
                         'cantidad'      => floatval($cantidad),
@@ -170,23 +221,23 @@ class UploadXml extends Component
                 $this->reset('xmlFile'); // Limpiar el input de archivo
 
                 // Emitir eventos para cerrar el modal y refrescar la lista de compras
-                $this->dispatch('close-upload-xml-modal');
-                $this->dispatch('refresh-compras-list'); // Notifica a ListCompras para que se actualice
+                $this->emit('close-upload-xml-modal');
+                // IMPORTANTE: Asegúrate de que ListCompras.php esté escuchando este evento
+                $this->emit('refresh-compras-list'); // Notifica a ListCompras para que se actualice
 
             } catch (\Exception $e) {
                 DB::rollBack();
-                $this->error = 'Error al guardar la compra: ' . $e->getMessage();
-                Log::error('Error al procesar XML y guardar compra: ' . $e->getMessage());
+                $this->error = 'Error al guardar la compra en la base de datos: ' . $e->getMessage();
+                Log::error('Error al procesar XML y guardar compra: ' . $e->getMessage() . ' en línea ' . $e->getLine());
             }
 
         } catch (\Exception $e) {
             $this->error = 'Error al procesar el archivo XML: ' . $e->getMessage();
-            Log::error('Error al cargar XML: ' . $e->getMessage());
+            Log::error('Error al cargar/parsear XML: ' . $e->getMessage() . ' en línea ' . $e->getLine());
         } finally {
-            $this->loading = false; // Ocultar spinner
+            $this->loading = false;
         }
     }
-
 
     public function render()
     {

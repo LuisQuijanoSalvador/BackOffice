@@ -5,6 +5,7 @@ use App\Http\Controllers\loginController;
 use App\Http\Controllers\admin\IndexController;
 use App\Http\Controllers\entidades\UsuarioController;
 use App\Http\Livewire\Entidades\Usuarios;
+use App\Http\Livewire\Compras\EditCompra;
 use App\Http\Controllers\AbonoController;
 
 
@@ -70,6 +71,19 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('estadodecuenta', function(){ return view('cuentas-por-cobrar.estado-cuenta');})->name('rEstadosdecuenta');
     });
+
+    Route::group(['prefix'=>'compras'],function(){
+        Route::get('compras', function(){ return view('compras.compra');})->name('listaCompras');
+        Route::get('nuevo', function(){ return view('compras.nuevaCompra');})->name('nuevaCompra');
+        // Route::get('{id}/editar', function(){ return view('compras.editCompra');})->name('editarCompra');
+        // Route::get('{compra}/editar', EditCompra::class)->name('editarCompra');
+        Route::get('{compraId}/editar', function($compraId){
+            // Aquí pasas el ID directamente a la vista
+            return view('compras.editCompra', ['compraId' => $compraId]);
+        })->name('editarCompra');
+        Route::get('suppliers', function(){ return view('compras.suppliers');})->name('suppliersList');
+    });
+
 
     Route::group(['prefix'=>'entidades'],function(){
         Route::get('usuarios', function(){ return view('entidades.usuarios');})->name('listaUsuarios');

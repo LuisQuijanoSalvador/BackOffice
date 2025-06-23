@@ -397,6 +397,21 @@ return [
             ]
         ],
         [
+            'text'        => 'Compras',
+            'url'         => 'admin/pages',
+            'icon'        => 'fas fa-cart-plus',
+            'submenu'=>[
+                [
+                    'text' => 'Compras',
+                    'route' => 'listaCompras'
+                ],
+                [
+                    'text' => 'Proveedores',
+                    'route' => 'suppliersList'
+                ],
+            ]
+        ],
+        [
             'text'        => 'Entidades',
             'url'         => 'admin/pages',
             'icon'        => 'fas fa-building',

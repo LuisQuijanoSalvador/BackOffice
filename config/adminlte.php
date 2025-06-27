@@ -405,10 +405,10 @@ return [
                     'text' => 'Compras',
                     'route' => 'listaCompras'
                 ],
-                [
-                    'text' => 'Proveedores',
-                    'route' => 'suppliersList'
-                ],
+                // [
+                //     'text' => 'Proveedores',
+                //     'route' => 'suppliersList'
+                // ],
             ]
         ],
         [

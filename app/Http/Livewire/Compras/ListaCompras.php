@@ -26,6 +26,8 @@ class ListaCompras extends Component
     // Livewire 2.x - Paginación por defecto de Bootstrap
     protected $paginationTheme = 'bootstrap';
 
+    protected $listeners = ['refresh-compras-list' => '$refresh'];
+
     public function mount(){
         $this->proveedores = Supplier::all()->sortBy('razonSocial');
         $fechaActual = Carbon::now();

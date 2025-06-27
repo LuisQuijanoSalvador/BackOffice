@@ -15,6 +15,7 @@ class CompraDetalle extends Model
         'unidadMedida',
         'descripcion',
         'valorUnitario',
+        'afectoIgv',
         'estado'
     ];
 

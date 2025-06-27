@@ -17,7 +17,8 @@ return new class extends Migration
             $table->integer('cantidad');
             $table->string('unidadMedida');
             $table->string('descripcion');
-            $table->integer('valorUnitario');
+            $table->decimal('valorUnitario');
+            $table->boolean('afectoIgv');
             $table->integer('estado');
             $table->timestamps();
         });

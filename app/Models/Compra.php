@@ -20,6 +20,7 @@ class Compra extends Model
         'fechaEmision',
         'moneda',
         'subTotal',
+        'inafecto',
         'igv',
         'total',
         'totalLetras',

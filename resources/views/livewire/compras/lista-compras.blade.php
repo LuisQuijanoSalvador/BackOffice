@@ -106,7 +106,8 @@
                         <th>Tipo Doc.</th>
                         <th>Documento</th>
                         <th>Fecha Emisión</th>
-                        <th>SubTotal</th>
+                        <th>Afecto</th>
+                        <th>Inafecto</th>
                         <th>IGV</th>
                         <th>Total</th>
                         <th>Estado</th>
@@ -124,6 +125,7 @@
                             <td>{{ $compra->serie }}-{{ $compra->numero }}</td> {{-- CONCATENAMOS AQUÍ --}}
                             <td>{{ $compra->fechaEmision->format('d/m/Y') }}</td>
                             <td>{{ number_format($compra->subTotal, 2) }}</td>
+                            <td>{{ number_format($compra->inafecto, 2) }}</td>
                             <td>{{ number_format($compra->igv, 2) }}</td>
                             <td>{{ number_format($compra->total, 2) }}</td>
                             <td>

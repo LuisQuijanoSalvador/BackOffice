@@ -23,6 +23,7 @@ return new class extends Migration
             $table->date('fechaEmision');
             $table->string('moneda');
             $table->decimal('subTotal');
+            $table->decimal('inafecto');
             $table->decimal('igv');
             $table->decimal('total');
             $table->string('totalLetras');

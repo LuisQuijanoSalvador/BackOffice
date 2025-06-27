@@ -20,19 +20,21 @@ class CreateCompra extends Component
     public $serie;
     public $numero;
     public $idProveedor;
-    public $idCliente;
+    public $idCliente = 132;
     public $numeroFile;
     public $formaPago;
     public $fechaEmision;
     public $moneda;
     public $subTotal = 0;
     public $igv = 0;
+    public $inafecto = 0;
     public $total = 0;
     public $totalLetras;
     public $observacion;
 
     // Propiedad para los detalles de la compra (lista de detalles ya agregados)
     public $detalles = [];
+    public $tasaIGV;
 
     // Propiedades temporales para el detalle que se está agregando/editando en el modal
     public $currentDetalle = [
@@ -40,6 +42,7 @@ class CreateCompra extends Component
         'unidadMedida'  => '',
         'descripcion'   => '',
         'valorUnitario' => 0,
+        'afectoIgv'     => true,
         'estado'        => 1, // Puedes predefinir el ID del estado 'Activo' o 'Pendiente'
     ];
 
@@ -58,8 +61,8 @@ class CreateCompra extends Component
         'Débito' => 'Débito',
     ];
     public $monedas = [
-        'PEN' => 'Soles (PEN)',
-        'USD' => 'Dólares (USD)',
+        'PEN' => 'Soles',
+        'USD' => 'Dólares',
     ];
 
     // Livewire 2.x listeners
@@ -105,6 +108,7 @@ class CreateCompra extends Component
         $this->clientes       = Cliente::orderBy('razonSocial')->get();
         $this->estados        = Estado::all();
         $this->fechaEmision   = now()->format('Y-m-d');
+        $this->tasaIGV = config('taxes.igv_rate');
 
         // NO INICIALIZAMOS currentDetalle en mount aquí, se hará al abrir el modal
     }
@@ -112,12 +116,39 @@ class CreateCompra extends Component
     public function calculateTotals()
     {
         $this->subTotal = 0;
-        foreach ($this->detalles as $detalle) {
-            $this->subTotal += ($detalle['cantidad'] * $detalle['valorUnitario']);
+        $this->igv = 0;
+        $this->inafecto = 0; // Monto de ítems inafectos
+        $this->total = 0;
+
+        // foreach ($this->detalles as $detalle) {
+        //     $this->subTotal += ($detalle['cantidad'] * $detalle['valorUnitario']);
+        // }
+        foreach ($this->detalles as $index => $detalle) {
+            // Asegurarse de que los valores sean numéricos
+            $cantidad = floatval($detalle['cantidad'] ?? 0);
+            $valorUnitario = floatval($detalle['valorUnitario'] ?? 0);
+            $afectoIGV = (bool)($detalle['afectoIgv'] ?? true); // Por defecto true si no está definido
+            
+            $subtotalLinea = $cantidad * $valorUnitario;
+
+            if ($afectoIGV) {
+                // Si la línea está afecta al IGV
+                $this->subTotal += $subtotalLinea; // Suma a la base gravada
+                $this->igv += $subtotalLinea * $this->tasaIGV; // Calcula el IGV de esta línea
+            } else {
+                // Si la línea es inafecta al IGV
+                $this->inafecto += $subtotalLinea; // Suma al total inafecto
+            }
         }
 
-        $this->igv = $this->subTotal * 0.18; // Ajusta el IGV si es necesario
-        $this->total = $this->subTotal + $this->igv;
+        // El total general es la suma de la base gravada + inafecto + IGV
+        $this->total = $this->subTotal + $this->inafecto + $this->igv;
+
+        // Redondear a 2 decimales para evitar problemas de precisión de flotantes
+        $this->subTotal = round($this->subTotal, 2);
+        $this->igv = round($this->igv, 2);
+        $this->inafecto = round($this->inafecto, 2);
+        $this->total = round($this->total, 2);
         $this->totalLetras = "Son " . number_format($this->total, 2) . " " . ($this->monedas[$this->moneda] ?? '') . " y 00/100";
     }
 
@@ -131,6 +162,7 @@ class CreateCompra extends Component
             'unidadMedida'  => '',
             'descripcion'   => '',
             'valorUnitario' => 0,
+            'afectoIgv'     => true,
             'estado'        => 1,
         ];
         $this->resetErrorBag('currentDetalle.*'); // Limpiar errores de validación previos del modal
@@ -225,6 +257,7 @@ class CreateCompra extends Component
                 'fechaEmision'       => $this->fechaEmision,
                 'moneda'             => $this->moneda,
                 'subTotal'           => $this->subTotal,
+                'inafecto'           => $this->inafecto,
                 'igv'                => $this->igv,
                 'total'              => $this->total,
                 'totalLetras'        => $this->totalLetras,
@@ -240,6 +273,7 @@ class CreateCompra extends Component
                     'unidadMedida'  => $detalleData['unidadMedida'],
                     'descripcion'   => $detalleData['descripcion'],
                     'valorUnitario' => $detalleData['valorUnitario'],
+                    'afectoIGV'     => (bool)$detalleData['afectoIGV'],
                     'estado'        => Estado::where('descripcion', 'Activo')->first()->id ?? 1,
                 ]);
             }

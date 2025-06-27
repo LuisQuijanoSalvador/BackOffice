@@ -146,8 +146,12 @@
                 <h3 class="mb-3">Totales</h3>
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <label for="subTotal" class="form-label">SubTotal</label>
+                        <label for="subTotal" class="form-label">Afecto</label>
                         <input type="text" id="subTotal" wire:model="subTotal" class="form-control bg-light" readonly>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Inafecto:</label>
+                        <input type="text" class="form-control" value="{{ number_format($inafecto, 2) }}" readonly>
                     </div>
                     <div class="col-md-6">
                         <label for="igv" class="form-label">IGV</label>
@@ -205,6 +209,13 @@
                                 <label for="currentDetalle.valorUnitario" class="form-label">Valor Unitario</label>
                                 <input type="number" step="0.01" id="currentDetalle.valorUnitario" wire:model.blur="currentDetalle.valorUnitario" class="form-control">
                                 @error('currentDetalle.valorUnitario') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <div class="form-check form-switch">
+                                    {{-- <input type="checkbox" class="form-check-input" id="afectoIGV-{{ $index }}" wire:model.lazy="detalles.{{ $index }}.afectoIGV"> --}}
+                                    <input type="checkbox" role="switch" class="form-check-input" id="currentDetalle.afectoIgv" wire:model="currentDetalle.afectoIgv">
+                                    <label class="form-check-label" for="currentDetalle.afectoIGV">Afecto IGV</label>
+                                </div>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" wire:click="closeDetalleModal">Cancelar</button>

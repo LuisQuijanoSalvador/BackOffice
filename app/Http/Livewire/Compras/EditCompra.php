@@ -28,6 +28,7 @@ class EditCompra extends Component
     public $fechaEmision;
     public $moneda;
     public $subTotal = 0;
+    public $inafecto = 0;
     public $igv = 0;
     public $total = 0;
     public $totalLetras;
@@ -35,6 +36,7 @@ class EditCompra extends Component
 
     // Propiedad para los detalles de la compra (lista de detalles ya agregados)
     public $detalles = [];
+    public $tasaIGV;
 
     // Propiedades temporales para el detalle que se está agregando/editando en el modal
     public $currentDetalle = [
@@ -43,6 +45,7 @@ class EditCompra extends Component
         'unidadMedida'  => '',
         'descripcion'   => '',
         'valorUnitario' => 0,
+        'afectoIgv'     => true,
         'estado'        => 1, // Puedes predefinir el ID del estado 'Activo'
     ];
     public $editingDetalleIndex = null; // Para saber qué índice de detalle se está editando
@@ -108,6 +111,8 @@ class EditCompra extends Component
     // EL MÉTODO MOUNT ES CLAVE AQUÍ PARA CARGAR LA COMPRA
     public function mount($compra)
     {
+        $this->tasaIGV = config('taxes.igv_rate');
+
         $compra = Compra::findOrFail($compra);
         $this->compra = $compra; // Inyecta la compra directamente
 
@@ -122,6 +127,7 @@ class EditCompra extends Component
         $this->fechaEmision = $compra->fechaEmision->format('Y-m-d'); // Formatear para el input date
         $this->moneda = $compra->moneda;
         $this->subTotal = $compra->subTotal;
+        $this->inafecto = $compra->inafecto;
         $this->igv = $compra->igv;
         $this->total = $compra->total;
         $this->totalLetras = $compra->totalLetras;
@@ -147,12 +153,39 @@ class EditCompra extends Component
     public function calculateTotals()
     {
         $this->subTotal = 0;
-        foreach ($this->detalles as $detalle) {
-            $this->subTotal += ($detalle['cantidad'] * $detalle['valorUnitario']);
+        $this->igv = 0;
+        $this->inafecto = 0; // Monto de ítems inafectos
+        $this->total = 0;
+        // foreach ($this->detalles as $detalle) {
+        //     $this->subTotal += ($detalle['cantidad'] * $detalle['valorUnitario']);
+        // }
+        
+        foreach ($this->detalles as $index => $detalle) {
+            // Asegurarse de que los valores sean numéricos
+            $cantidad = floatval($detalle['cantidad'] ?? 0);
+            $valorUnitario = floatval($detalle['valorUnitario'] ?? 0);
+            $afectoIGV = (bool)($detalle['afectoIgv'] ?? true); // Por defecto true si no está definido
+            
+            $subtotalLinea = $cantidad * $valorUnitario;
+
+            if ($afectoIGV) {
+                // Si la línea está afecta al IGV
+                $this->subTotal += $subtotalLinea; // Suma a la base gravada
+                $this->igv += $subtotalLinea * $this->tasaIGV; // Calcula el IGV de esta línea
+            } else {
+                // Si la línea es inafecta al IGV
+                $this->inafecto += $subtotalLinea; // Suma al total inafecto
+            }
         }
 
-        $this->igv = $this->subTotal * 0.18; // Ajusta el IGV si es necesario
-        $this->total = $this->subTotal + $this->igv;
+        // El total general es la suma de la base gravada + inafecto + IGV
+        $this->total = $this->subTotal + $this->inafecto + $this->igv;
+
+        // Redondear a 2 decimales para evitar problemas de precisión de flotantes
+        $this->subTotal = round($this->subTotal, 2);
+        $this->igv = round($this->igv, 2);
+        $this->inafecto = round($this->inafecto, 2);
+        $this->total = round($this->total, 2);
         $this->totalLetras = "Son " . number_format($this->total, 2) . " " . ($this->monedas[$this->moneda] ?? '') . " y 00/100";
     }
 
@@ -167,6 +200,7 @@ class EditCompra extends Component
             'unidadMedida'  => '',
             'descripcion'   => '',
             'valorUnitario' => 0,
+            'afectoIgv'     => true,
             'estado'        => 1,
         ];
         $this->editingDetalleIndex = null; // No estamos editando un detalle existente
@@ -268,6 +302,7 @@ class EditCompra extends Component
                 'fechaEmision'       => $this->fechaEmision,
                 'moneda'             => $this->moneda,
                 'subTotal'           => $this->subTotal,
+                'inafecto'           => $this->inafecto,
                 'igv'                => $this->igv,
                 'total'              => $this->total,
                 'totalLetras'        => $this->totalLetras,
@@ -305,6 +340,7 @@ class EditCompra extends Component
                             'unidadMedida'  => $detalleData['unidadMedida'],
                             'descripcion'   => $detalleData['descripcion'],
                             'valorUnitario' => $detalleData['valorUnitario'],
+                            'afectoIgv'     => $detalleData['afectoIgv'],
                             'estado'        => $detalleData['estado'] ?? 1, // Mantener estado o predefinir
                         ]);
                     }
@@ -315,6 +351,7 @@ class EditCompra extends Component
                         'unidadMedida'  => $detalleData['unidadMedida'],
                         'descripcion'   => $detalleData['descripcion'],
                         'valorUnitario' => $detalleData['valorUnitario'],
+                        'afectoIgv'     => $detalleData['afectoIgv'],
                         'estado'        => $detalleData['estado'] ?? 1, // Predefinir estado
                     ]);
                 }

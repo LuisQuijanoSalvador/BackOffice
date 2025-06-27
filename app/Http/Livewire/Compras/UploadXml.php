@@ -30,6 +30,12 @@ class UploadXml extends Component
         '08' => 4, // Ejemplo: Nota de Débito
     ];
 
+    public function mount()
+    {
+        // Obtener la tasa de IGV de la configuración 
+        $this->tasaIGV = config('taxes.igv_rate', 0.18); 
+    }
+
     public function processXml()
     {
         $this->reset(['message', 'error']);
@@ -97,7 +103,7 @@ class UploadXml extends Component
             // En lugar de una XPath amplia con 'or' y luego un foreach,
             // vamos a buscar cada tipo de inafecto/exonerado por separado y sumarlo.
             // Esto asegura que cada monto se agregue una sola vez si solo hay una instancia por ID.
-            
+
             // Monto Inafecto (Código 9998: INA)
             $inafecto9998Nodes = $xml->xpath('//cac:TaxTotal/cac:TaxSubtotal[cac:TaxCategory/cac:TaxScheme/cbc:ID="9998"]/cbc:TaxableAmount');
             $montoInafecto += !empty($inafecto9998Nodes) ? floatval((string)$inafecto9998Nodes[0]) : 0;
@@ -214,11 +220,44 @@ class UploadXml extends Component
                     $valorUnitarioNodes = $linea->xpath('.//cac:Price/cbc:PriceAmount');
                     $valorUnitario = !empty($valorUnitarioNodes) ? (string)$valorUnitarioNodes[0] : '0';
 
+                    // --- NUEVA LÓGICA PARA afectoIgv EN CADA DETALLE ---
+                    $afectoIgvLinea = true; // Por defecto, asumimos que está afecto
+                    $taxSchemeIdNodes = $linea->xpath('.//cac:TaxTotal/cac:TaxSubtotal/cac:TaxCategory/cac:TaxScheme/cbc:ID');
+
+                    // Si se encuentra un TaxScheme/ID en la línea de detalle
+                    if (!empty($taxSchemeIdNodes)) {
+                        $taxSchemeId = (string)$taxSchemeIdNodes[0];
+                        // Si el ID del esquema tributario NO es '1000' (IGV),
+                        // o si es uno de los códigos de inafecto/exonerado, entonces no está afecto.
+                        if ($taxSchemeId !== '1000' || in_array($taxSchemeId, ['9998', '9997', '9996', '9995'])) {
+                            $afectoIgvLinea = false;
+                        }
+                    }
+                    // Si no se encuentra un TaxScheme/ID, y el monto es 0, podría ser inafecto,
+                    // pero el XML UBL generalmente lo indica con un TaxSubtotal.
+                    // Nos basamos principalmente en el TaxScheme/ID.
+
+                    // Si hay un monto de IGV en la línea, es afecto.
+                    // Esto es una validación adicional si el TaxScheme/ID no es concluyente.
+                    $lineTaxAmountNodes = $linea->xpath('.//cac:TaxTotal/cbc:TaxAmount');
+                    $lineTaxAmount = !empty($lineTaxAmountNodes) ? floatval((string)$lineTaxAmountNodes[0]) : 0;
+                    if ($lineTaxAmount > 0.001) { // Usar un umbral para flotantes
+                        $afectoIgvLinea = true;
+                    }
+
+                    Log::info("Detalle Linea: " . json_encode([
+                        'descripcion' => $descripcion,
+                        'cantidad' => $cantidad,
+                        'valorUnitario' => $valorUnitario,
+                        'afectoIgv' => $afectoIgvLinea, // Valor determinado
+                    ]));
+
                     $compra->detalles()->create([
                         'cantidad'      => floatval($cantidad),
                         'unidadMedida'  => (string)$unidadMedida,
                         'descripcion'   => (string)$descripcion,
                         'valorUnitario' => floatval($valorUnitario),
+                        'afectoIgv'     => $afectoIgvLinea, // <-- ¡Guardar este valor!
                         'estado'        => $estadoActivo->id,
                     ]);
                 }

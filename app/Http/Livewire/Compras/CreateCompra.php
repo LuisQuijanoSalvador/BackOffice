@@ -273,7 +273,7 @@ class CreateCompra extends Component
                     'unidadMedida'  => $detalleData['unidadMedida'],
                     'descripcion'   => $detalleData['descripcion'],
                     'valorUnitario' => $detalleData['valorUnitario'],
-                    'afectoIGV'     => (bool)$detalleData['afectoIGV'],
+                    'afectoIgv'     => (bool)$detalleData['afectoIgv'],
                     'estado'        => Estado::where('descripcion', 'Activo')->first()->id ?? 1,
                 ]);
             }

@@ -409,6 +409,14 @@ return [
                 //     'text' => 'Proveedores',
                 //     'route' => 'suppliersList'
                 // ],
+                [
+                    'text' => 'Rep. Fechas',
+                    'route' => 'repFechas'
+                ],
+                [
+                    'text' => 'Rep. Proveedor',
+                    'route' => 'repProveedor'
+                ],
             ]
         ],
         [

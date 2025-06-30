@@ -7,6 +7,7 @@ use App\Http\Controllers\entidades\UsuarioController;
 use App\Http\Livewire\Entidades\Usuarios;
 use App\Http\Livewire\Compras\EditCompra;
 use App\Http\Controllers\AbonoController;
+use App\Http\Livewire\Compras\ReporteComprasPorFecha;
 
 
 /*
@@ -82,6 +83,8 @@ Route::middleware(['auth'])->group(function () {
             return view('compras.editCompra', ['compraId' => $compraId]);
         })->name('editarCompra');
         Route::get('suppliers', function(){ return view('compras.suppliers');})->name('suppliersList');
+        Route::get('reporte-fechas', function(){ return view('compras.repFechas');})->name('repFechas');
+        Route::get('reporte-proveedor', function(){ return view('compras.repProveedor');})->name('repProveedor');
     });
 
 

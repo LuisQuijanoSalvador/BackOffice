@@ -93,6 +93,31 @@
                         <textarea id="observacion" wire:model.blur="observacion" rows="3" class="form-control"></textarea>
                         @error('observacion') <span class="text-danger small">{{ $message }}</span> @enderror
                     </div>
+                    {{-- Campo para subir PDF --}}
+                    <div class="col-md-6 mb-3">
+                        <label for="pdfFile">Adjuntar Factura PDF</label>
+                        <input type="file" class="form-control" id="pdfFile" wire:model="pdfFile" accept="application/pdf">
+                        @error('pdfFile') <span class="text-danger">{{ $message }}</span> @enderror
+
+                        {{-- Mostrar progreso de subida --}}
+                        <div x-data="{ isUploading: false, progress: 0 }"
+                            x-on:livewire-upload-start="isUploading = true"
+                            x-on:livewire-upload-finish="isUploading = false"
+                            x-on:livewire-upload-error="isUploading = false"
+                            x-on:livewire-upload-progress="progress = $event.detail.progress">
+                            <div x-show="isUploading" class="progress mt-2">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" :style="`width: ${progress}%`" aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+
+                        {{-- Mostrar PDF existente en modo edición --}}
+                        @if ($pdf_path_existente)
+                            <div class="mt-2">
+                                <p>PDF Actual: <a href="{{ Storage::url($pdf_path_existente) }}" target="_blank">Ver PDF</a></p>
+                                <button type="button" class="btn btn-danger btn-sm" wire:click="removeExistingPdf">Eliminar PDF Actual</button>
+                            </div>
+                        @endif
+                    </div>
                 </div>
     
                 <hr class="my-4">

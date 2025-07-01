@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Compras;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use App\Models\Compra;
 use App\Models\CompraDetalle;
 use App\Models\TipoDocumento;
@@ -12,9 +13,13 @@ use App\Models\Estado;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class CreateCompra extends Component
 {
+    use WithFileUploads;
+
     // Propiedades para los campos de la tabla 'compras'
     public $tipoDocumento;
     public $serie;
@@ -31,6 +36,8 @@ class CreateCompra extends Component
     public $total = 0;
     public $totalLetras;
     public $observacion;
+    public $pdf_path_existente;
+    public $pdfFile;
 
     // Propiedad para los detalles de la compra (lista de detalles ya agregados)
     public $detalles = [];
@@ -80,6 +87,7 @@ class CreateCompra extends Component
         'fechaEmision'     => 'required|date',
         'moneda'           => 'required|string|in:PEN,USD',
         'observacion'      => 'nullable|string|max:500',
+        'pdfFile'          => 'nullable|mimes:pdf|max:5120',
         // No validamos detalles aquí directamente, sino el currentDetalle en el modal
     ];
 
@@ -99,6 +107,8 @@ class CreateCompra extends Component
         'currentDetalle.unidadMedida.required' => 'La unidad de medida es obligatoria.',
         'currentDetalle.descripcion.required' => 'La descripción del detalle es obligatoria.',
         'currentDetalle.valorUnitario.required' => 'El valor unitario es obligatorio.',
+        'pdfFile.mimes' => 'El archivo debe ser de formato PDF.',
+        'pdfFile.max'   => 'El tamaño máximo permitido para el PDF es 5MB.',
     ];
 
     public function mount()
@@ -246,6 +256,20 @@ class CreateCompra extends Component
         DB::beginTransaction();
 
         try {
+            // Manejo de la subida del PDF
+            $pdfPath = $this->pdf_path_existente; // Mantener el existente por defecto
+
+            if ($this->pdfFile) { // Si se sube un nuevo archivo PDF
+                // Si ya existe un PDF anterior, lo eliminamos
+                if ($this->pdf_path_existente && Storage::disk('public')->exists($this->pdf_path_existente)) {
+                    Storage::disk('public')->delete($this->pdf_path_existente);
+                }
+                // Guardar el nuevo PDF en la carpeta 'compras_pdfs' dentro de 'storage/app/public'
+                $pdfPath = $this->pdfFile->store('compras_pdfs', 'public');
+            } else if ($this->pdf_path_existente && !$this->compraId) {
+                $pdfPath = null;
+            }
+
             $compra = Compra::create([
                 'tipoDocumento'      => $this->tipoDocumento,
                 'serie'              => $this->serie,
@@ -262,6 +286,7 @@ class CreateCompra extends Component
                 'total'              => $this->total,
                 'totalLetras'        => $this->totalLetras,
                 'observacion'        => $this->observacion,
+                'pdf_path'           => $pdfPath, // <-- Guardar la ruta del PDF
                 'estado'             => Estado::where('descripcion', 'Pendiente')->first()->id ?? 1,
                 'usuarioCreacion'    => Auth::id(),
                 'usuarioModificacion' => Auth::id(),
@@ -290,6 +315,22 @@ class CreateCompra extends Component
             DB::rollBack();
             session()->flash('error', 'Hubo un error al registrar la compra: ' . $e->getMessage());
             \Log::error('Error al registrar compra: ' . $e->getMessage());
+        }
+    }
+
+    // Método para eliminar el PDF existente (opcional, si quieres un botón para quitarlo)
+    public function removeExistingPdf()
+    {
+        if ($this->pdf_path_existente && Storage::disk('public')->exists($this->pdf_path_existente)) {
+            Storage::disk('public')->delete($this->pdf_path_existente);
+            $this->pdf_path_existente = null; // Limpiar la propiedad
+            // Si la compra ya existe en DB, también actualiza el campo pdf_path
+            if ($this->compraId) {
+                $compra = Compra::find($this->compraId);
+                $compra->pdf_path = null;
+                $compra->save();
+                session()->flash('message', 'PDF eliminado correctamente.');
+            }
         }
     }
 

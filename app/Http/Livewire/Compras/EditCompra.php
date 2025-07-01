@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Compras;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use App\Models\Compra;
 use App\Models\CompraDetalle;
 use App\Models\TipoDocumento;
@@ -11,9 +12,13 @@ use App\Models\Cliente;
 use App\Models\Estado;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class EditCompra extends Component
 {
+    use WithFileUploads;
+
     // Propiedad para la compra que se va a editar
     // public Compra $compra;
 
@@ -33,6 +38,8 @@ class EditCompra extends Component
     public $total = 0;
     public $totalLetras;
     public $observacion;
+    public $pdf_path_existente; 
+    public $pdfFile;
 
     // Propiedad para los detalles de la compra (lista de detalles ya agregados)
     public $detalles = [];
@@ -88,6 +95,7 @@ class EditCompra extends Component
         'fechaEmision'     => 'required|date',
         'moneda'           => 'required|string|in:PEN,USD',
         'observacion'      => 'nullable|string|max:500',
+        'pdfFile'          => 'nullable|mimes:pdf|max:5120',
     ];
 
     // Reglas de validación para el detalle en el modal (las mismas que CreateCompra)
@@ -106,6 +114,8 @@ class EditCompra extends Component
         'currentDetalle.unidadMedida.required' => 'La unidad de medida es obligatoria.',
         'currentDetalle.descripcion.required' => 'La descripción del detalle es obligatoria.',
         'currentDetalle.valorUnitario.required' => 'El valor unitario es obligatorio.',
+        'pdfFile.mimes' => 'El archivo debe ser de formato PDF.',
+        'pdfFile.max'   => 'El tamaño máximo permitido para el PDF es 5MB.',
     ];
 
     // EL MÉTODO MOUNT ES CLAVE AQUÍ PARA CARGAR LA COMPRA
@@ -132,6 +142,7 @@ class EditCompra extends Component
         $this->total = $compra->total;
         $this->totalLetras = $compra->totalLetras;
         $this->observacion = $compra->observacion;
+        $this->pdf_path_existente = $compra->pdf_path;
 
         // Cargar los detalles de la compra
         // Asegurarse de que los detalles se carguen como arrays asociativos para la edición
@@ -290,6 +301,20 @@ class EditCompra extends Component
         DB::beginTransaction();
 
         try {
+            // Manejo de la subida del PDF
+            $pdfPath = $this->pdf_path_existente; // Mantener el existente por defecto
+
+            if ($this->pdfFile) { // Si se sube un nuevo archivo PDF
+                // Si ya existe un PDF anterior, lo eliminamos
+                if ($this->pdf_path_existente && Storage::disk('public')->exists($this->pdf_path_existente)) {
+                    Storage::disk('public')->delete($this->pdf_path_existente);
+                }
+                // Guardar el nuevo PDF
+                $pdfPath = $this->pdfFile->store('compras_pdfs', 'public');
+            } else if ($this->pdf_path_existente === null && $compra->pdf_path) {
+                $pdfPath = null;
+            }
+            
             // Actualizar la compra principal
             $this->compra->update([
                 'tipoDocumento'      => $this->tipoDocumento,
@@ -307,16 +332,11 @@ class EditCompra extends Component
                 'total'              => $this->total,
                 'totalLetras'        => $this->totalLetras,
                 'observacion'        => $this->observacion,
+                'pdf_path'           => $pdfPath,
                 // Mantener el estado actual a menos que haya una lógica específica para cambiarlo
                 // 'estado'             => $this->compra->estado,
                 'usuarioModificacion' => Auth::id(),
             ]);
-
-            // Sincronizar los detalles de la compra
-            // Esto es más complejo: necesitamos ver qué se eliminó, qué se añadió, qué se modificó.
-            // Una estrategia común es eliminar todos los detalles existentes y recrearlos,
-            // o identificar los cambios. Para simplificar, haremos un "borrar y recrear" si no hay muchos detalles.
-            // Si hay muchos detalles y la performance es crítica, se necesitaría una lógica de diff más avanzada.
 
             // 1. Obtener los IDs de los detalles actuales en la base de datos
             $existingDetailIds = $this->compra->detalles->pluck('id')->toArray();
@@ -368,6 +388,24 @@ class EditCompra extends Component
             DB::rollBack();
             session()->flash('error', 'Hubo un error al actualizar la compra: ' . $e->getMessage());
             \Log::error('Error al actualizar compra: ' . $e->getMessage());
+        }
+    }
+
+    public function removeExistingPdf()
+    {
+        if ($this->pdf_path_existente && Storage::disk('public')->exists($this->pdf_path_existente)) {
+            Storage::disk('public')->delete($this->pdf_path_existente);
+            $this->pdf_path_existente = null; // Limpiar la propiedad
+            $this->pdfFile = null; // Asegurarse de que no quede un archivo temporal
+            // Actualizar la base de datos inmediatamente
+            if ($this->compraId) {
+                $compra = Compra::find($this->compraId);
+                if ($compra) {
+                    $compra->pdf_path = null;
+                    $compra->save();
+                }
+            }
+            session()->flash('message', 'PDF eliminado correctamente.');
         }
     }
 

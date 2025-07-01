@@ -25,6 +25,7 @@ class Compra extends Model
         'total',
         'totalLetras',
         'observacion',
+        'pdf_path',
         'estado',
         'usuarioCreacion',
         'usuarioModificacion',

@@ -145,6 +145,13 @@
                                         <i class="fa-solid fa-ban"></i>
                                     </button>
                                 @endif
+                                
+                                {{-- Botón de Ver PDF --}}
+                                @if ($compra->pdf_path)
+                                    <a href="{{ Storage::url($compra->pdf_path) }}" target="_blank" class="btn btn-light btn-sm me-1" title="Ver PDF">
+                                        <i class="fa-solid fa-eye"></i>
+                                    </a>
+                                @endif
 
                                 {{-- Botón de Eliminar --}}
                                 <button type="button" class="btn btn-danger btn-sm" wire:click="confirmAction({{ $compra->id }}, 'eliminar')" title="Eliminar">

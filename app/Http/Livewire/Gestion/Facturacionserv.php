@@ -1057,7 +1057,7 @@ class Facturacionserv extends Component
                 "total_gratuitas"=> 0,
                 "importe_letras"=> $comprobante->totalLetras,
                 "total_icbper"=> "0.00",
-                "usuario"=> "luis.quijano@hardnetconsulting.com",
+                "usuario"=> "facturaselectronicas@astraveñl.com.pe",
                 "tipocambio"=> $comprobante->tipoCambio,
                 "codigo_sucu"=> "",
                 "detraccion_bs"=> "",

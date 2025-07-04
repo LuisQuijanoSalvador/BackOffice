@@ -574,6 +574,10 @@ return [
                     'text' => 'Segmentos',
                     'route' => 'rptSegmentos'
                 ],
+                [
+                    'text' => 'Abonos',
+                    'route' => 'rptAbonos'
+                ],
             ]
         ],
         [

@@ -128,6 +128,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('ventas', function(){ return view('reportes.reporte-ventas');})->name('rptVentas');
         Route::get('ventasalltech', function(){ return view('reportes.reporte-alltech');})->name('rptVentasAlltech');
         Route::get('segmentos', function(){ return view('reportes.segmentos');})->name('rptSegmentos');
+        Route::get('abonos', function(){ return view('reportes.reporte-abonos');})->name('rptAbonos');
     });
     Route::group(['prefix'=>'files'],function(){
         Route::get('files', function(){ return view('files.files');})->name('listaFiles');

@@ -329,7 +329,7 @@ return [
                     'route' => 'integradorBoletos'
                 ],
                 [
-                    'text' => 'Buscar Boleto',
+                    'text' => 'Obtener Boleto',
                     'route' => 'buscarBoleto'
                 ],
             ]

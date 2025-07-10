@@ -31,4 +31,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'continental_travel' => [
+        'token_url' => env('CONTINENTAL_TRAVEL_API_TOKEN_URL'),
+        'ticket_url' => env('CONTINENTAL_TRAVEL_API_TICKET_URL'),
+        'username' => env('CONTINENTAL_TRAVEL_API_USERNAME'),
+        'password' => env('CONTINENTAL_TRAVEL_API_PASSWORD'),
+    ],
+
 ];

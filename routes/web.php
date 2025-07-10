@@ -47,6 +47,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('boletos', function(){ return view('gestion.boletos');})->name('listaBoletos');
         Route::get('servicios', function(){ return view('gestion.servicios');})->name('listaServicios');
         Route::get('integrador', function(){ return view('gestion.integrador');})->name('integradorBoletos');
+        Route::get('buscarBoleto', function(){ return view('api-boletos.buscar-boleto');})->name('buscarBoleto');
     });
 
     Route::group(['prefix'=>'facturacion'],function(){

@@ -19,10 +19,15 @@ use App\Models\FileDetalle;
 use App\Models\Counter;
 use App\Models\BoletoRuta;
 use App\Models\BoletoPago;
+use Livewire\WithFileUploads;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Validator; 
 
 class BuscarBoleto extends Component
 {
-    public $ticketNumber,$idCounter=1;
+    use WithFileUploads;
+
+    public $ticketNumber,$idCounter=1, $source = 'api', $jsonFile;
     public $ticketData = null; // Para almacenar los datos del boleto
     public $boletoInfo = null;
     public $segments = []; 
@@ -43,14 +48,45 @@ class BuscarBoleto extends Component
     public $idMedioPago,$idTarjetaCredito,$numeroTarjeta,$monto,$fechaVencimientoTC,$boletoPagos;
 
     protected $rules = [
-        'ticketNumber' => 'required|string|min:10', // Ajusta la longitud mínima si sabes el formato exacto
+        'source' => 'required|in:api,file',
+        'ticketNumber' => 'required_if:source,api|string|min:10', // Ajusta la longitud mínima si sabes el formato exacto
+        'jsonFile' => 'required_if:source,file',
     ];
 
     protected $messages = [
-        'ticketNumber.required' => 'Por favor, ingrese el número de boleto.',
+        'ticketNumber.required_if' => 'Por favor, ingrese el número de boleto.',
         'ticketNumber.string' => 'El número de boleto debe ser texto.',
         'ticketNumber.min' => 'El número de boleto debe tener al menos :min caracteres.',
+        'jsonFile.required_if' => 'Por favor, seleccione un archivo JSON.',
+        'jsonFile.file' => 'El archivo seleccionado no es válido.',
+        'jsonFile.mimes' => 'El archivo debe ser de tipo JSON.',
+        'jsonFile.max' => 'El archivo JSON no debe exceder los 2MB.',
     ];
+
+    public function updatedSource()
+    {
+        // Limpiar campos y resultados anteriores cuando cambia la fuente
+        $this->reset([
+            'ticketData',
+            'boletoInfo',
+            'segments',
+            'taxes',
+            'errorMessage',
+        ]);
+        // Quitar errores de validación anteriores
+        $this->resetValidation();
+        
+        if ($this->source === 'api') {
+            // Si cambiamos a API, aseguramos que jsonFile esté completamente limpio
+            if ($this->jsonFile instanceof UploadedFile) { // Solo si hay un archivo cargado
+                $this->jsonFile->delete(); // Eliminar el archivo temporal del disco
+            }
+            $this->jsonFile = null; // Establecer la propiedad en null
+        } elseif ($this->source === 'file') {
+            // Si cambiamos a Archivo, aseguramos que ticketNumber esté limpio
+            $this->ticketNumber = '';
+        }
+    }
 
     /**
      * Busca los datos del boleto usando el servicio API.
@@ -59,16 +95,45 @@ class BuscarBoleto extends Component
     {
         $this->reset(['ticketData', 'boletoInfo', 'segments', 'taxes', 'errorMessage']); // Limpia resultados anteriores
         $this->isLoading = true; // Inicia el estado de carga
-
+        
         try {
             $this->validate();
-            $oBoleto = Boleto::where('numeroBoleto',$this->ticketNumber)->first();
-                if($oBoleto){
-                    session()->flash('error', 'El boleto ya está integrado.');
-                    return;
-                }
 
-            $result = $apiService->getTicketData($this->ticketNumber);
+            $result = null;
+            
+            if ($this->source === 'api'){
+                $result = $apiService->getTicketData($this->ticketNumber);
+
+            }elseif ($this->source === 'file'){
+                $validator = Validator::make(
+                    ['jsonFile' => $this->jsonFile], // Datos a validar
+                    ['jsonFile' => 'file|mimes:json|max:2048'], // Reglas específicas de archivo
+                    [
+                        'jsonFile.file' => $this->messages['jsonFile.file'],
+                        'jsonFile.mimes' => $this->messages['jsonFile.mimes'],
+                        'jsonFile.max' => $this->messages['jsonFile.max'],
+                    ]
+                ); 
+
+                if ($validator->fails()) {
+                    // Si falla la validación específica del archivo, lanza la excepción
+                    throw new \Illuminate\Validation\ValidationException($validator);
+                }
+                // Si la validación pasa, jsonFile es un UploadedFile válido y cumple con tipo/tamaño
+
+                $jsonContent = $this->jsonFile->get(); // Obtener el contenido del archivo
+                $decodedJson = json_decode($jsonContent, true); // Decodificar a un array asociativo
+
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    // Si la decodificación fue exitosa
+                    $result = $decodedJson;
+                } else {
+                    // Error al decodificar JSON
+                    throw new \Exception('El archivo JSON no es válido o está mal formado.');
+                }
+                
+            }
+            
 
             if ($result && !isset($result['error'])) {
                 // Si la respuesta no es nula y no contiene un error, significa éxito
@@ -97,6 +162,15 @@ class BuscarBoleto extends Component
                     'commission' => $result['commission'] ?? 0,
                     'commissionPercentage' => $result['commissionPercentage'] ?? 0,
                 ];
+                // Obtener Número Boleto
+                $this->ticketNumber = $this->boletoInfo['ticketnumber'];
+
+                // Validar Si boleto existe
+                $oBoleto = Boleto::where('numeroBoleto',$this->ticketNumber)->first();
+                if($oBoleto){
+                    session()->flash('error', 'El boleto ya está integrado.');
+                    return;
+                }
 
                 // Obtener Cliente
                 $ruc = $this->boletoInfo['nameRef'];
@@ -105,6 +179,9 @@ class BuscarBoleto extends Component
                     $this->idCliente = $oCliente->id;
                     $this->idTipoFacturacion = $oCliente->tipoFacturacion;
                     $this->idVendedor = $oCliente->vendedor;
+                }else{
+                    session()->flash('error', 'No se encuentra el cliente');
+                    return;
                 }
 
                 // Obtener Fecha Emision y tipo de cambio
@@ -231,6 +308,7 @@ class BuscarBoleto extends Component
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Manejo de errores de validación, Livewire los muestra automáticamente
+            dd($e);
             $this->errorMessage = 'Por favor, corrija los errores del formulario.';
             // Los errores ya serán visibles por las directivas @error
         } catch (\Exception $e) {
@@ -311,11 +389,6 @@ class BuscarBoleto extends Component
         $this->grabarPagosSabre($boleto->id);
         $this->grabarRutas($boleto->id, $this->boletoRutas);
         $this->crearFile($boleto);
-        // try {
-        //     return redirect()->route('listaBoletos');
-        // } catch (\Throwable $th) {
-        //     session()->flash('error', 'Ocurrió un error intentando grabar.');
-        // }
     }
 
     public function grabarPagosSabre($idBoleto){

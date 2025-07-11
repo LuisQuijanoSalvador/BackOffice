@@ -40,10 +40,34 @@
             </div>
             <br>
             <div class="mb-3">
-                <label for="ticketNumber" class="form-label">Número de Boleto:</label>
-                <input type="text" class="form-control" id="ticketNumber" wire:model.lazy="ticketNumber" placeholder="Ingrese el número de boleto">
-                @error('ticketNumber') <span class="text-danger">{{ $message }}</span> @enderror
+                <label class="form-label d-block">Obtener Boleto desde:</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="sourceApi" value="api" wire:model.live="source">
+                    <label class="form-check-label" for="sourceApi">API</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="sourceFile" value="file" wire:model.live="source">
+                    <label class="form-check-label" for="sourceFile">Archivo JSON</label>
+                </div>
+                @error('source') <span class="text-danger">{{ $message }}</span> @enderror
             </div>
+
+            @if ($source === 'api')
+                <div class="mb-3">
+                    <label for="ticketNumber" class="form-label">Número de Boleto:</label>
+                    <input type="text" class="form-control" id="ticketNumber" wire:model.lazy="ticketNumber" placeholder="Ingrese el número de boleto">
+                    @error('ticketNumber') <span class="text-danger">{{ $message }}</span> @enderror
+                </div>
+            @endif
+            
+            @if ($source === 'file')
+            <div class="mb-3">
+                <label for="jsonFile" class="form-label">Subir Archivo JSON:</label>
+                <input type="file" class="form-control" id="jsonFile" wire:model="jsonFile" accept=".json">
+                @error('jsonFile') <span class="text-danger">{{ $message }}</span> @enderror
+                <div wire:loading wire:target="jsonFile" class="text-muted mt-2">Cargando archivo...</div>
+            </div>
+        @endif
     
             <button class="btn btn-primary" wire:click="buscarBoleto" wire:loading.attr="disabled">
                 <span wire:loading wire:target="buscarBoleto" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

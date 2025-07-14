@@ -30,7 +30,7 @@ class Facturacion extends Component
     public $sort= 'numeroBoleto';
     public $direction = 'asc';
     
-    public $idRegistro,$idMoneda=1,$tipoCambio,$fechaEmision,$detraccion=0,$glosa="",$monedaLetra,
+    public $idRegistro,$idMoneda=1,$tipoCambio,$fechaEmision,$detraccion=0,$glosa="",$monedaLetra,$descripcion="",
             $tipoDocumentoIdentidad,$codigoDocumentoIdentidad,$descDocumentoIdentidad,$numeroTelefono,
             $chkMedioPago,$idMedioPagoCambio,$idMedioPago,$metodo_pago, $codigo_metodopago, $desc_metodopago,
             $centroCosto, $codUsuario,$totalNeto = 0,$totalInafecto = 0,$totalIGV = 0,$totalOtrosImpuestos = 0,

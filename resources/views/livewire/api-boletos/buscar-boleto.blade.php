@@ -61,19 +61,26 @@
             @endif
             
             @if ($source === 'file')
-            <div class="mb-3">
-                <label for="jsonFile" class="form-label">Subir Archivo JSON:</label>
-                <input type="file" class="form-control" id="jsonFile" wire:model="jsonFile" accept=".json">
-                @error('jsonFile') <span class="text-danger">{{ $message }}</span> @enderror
-                <div wire:loading wire:target="jsonFile" class="text-muted mt-2">Cargando archivo...</div>
-            </div>
-        @endif
-    
-            <button class="btn btn-primary" wire:click="buscarBoleto" wire:loading.attr="disabled">
+                <div class="mb-3">
+                    <label for="jsonFile" class="form-label">Subir Archivo JSON:</label>
+                    <input type="file" class="form-control" id="jsonFile" wire:model="jsonFile" accept=".json">
+                    @error('jsonFile') <span class="text-danger">{{ $message }}</span> @enderror
+                    <div wire:loading wire:target="jsonFile" class="text-muted mt-2">Cargando archivo...</div>
+                </div>
+            @endif
+            
+            {{-- <<-- CAMBIO CLAVE AQUÍ: Usar la propiedad computada para deshabilitar -->> --}}
+            <button class="btn btn-primary" wire:click="buscarBoleto" wire:loading.attr="disabled" {{ !$this->canSearch ? 'disabled' : '' }}>
+                <span wire:loading wire:target="buscarBoleto" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span wire:loading.remove wire:target="buscarBoleto">Buscar Boleto</span>
+                <span wire:loading wire:target="buscarBoleto">Buscando...</span>
+            </button>
+
+            {{-- <button class="btn btn-primary" wire:click="buscarBoleto" wire:loading.attr="disabled">
                 <span wire:loading wire:target="buscarBoleto" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                 <span wire:loading.remove wire:target="buscarBoleto">Obtener Boleto</span>
                 <span wire:loading wire:target="buscarBoleto">Buscando...</span>
-            </button>
+            </button> --}}
     
             @if (session()->has('success'))
                 <div class="alert alert-success mt-3">{{ session('success') }}</div>

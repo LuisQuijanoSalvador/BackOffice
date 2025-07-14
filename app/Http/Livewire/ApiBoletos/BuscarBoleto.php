@@ -27,6 +27,7 @@ class BuscarBoleto extends Component
 {
     use WithFileUploads;
 
+    public $igvPercentage;
     public $ticketNumber,$idCounter=1, $source = 'api', $jsonFile;
     public $ticketData = null; // Para almacenar los datos del boleto
     public $boletoInfo = null;
@@ -62,6 +63,27 @@ class BuscarBoleto extends Component
         'jsonFile.mimes' => 'El archivo debe ser de tipo JSON.',
         'jsonFile.max' => 'El archivo JSON no debe exceder los 2MB.',
     ];
+
+    public function mount()
+    {
+        $this->igvPercentage = config('taxes.igv_rate');
+    }
+
+    public function getCanSearchProperty()
+    {
+        if ($this->isLoading) {
+            return false; // Deshabilita si ya está cargando (para evitar doble clic)
+        }
+
+        if ($this->source === 'api') {
+            // Habilitado si el número de boleto tiene al menos 5 caracteres
+            return strlen($this->ticketNumber) >= 10;
+        } elseif ($this->source === 'file') {
+            // Habilitado si hay un archivo cargado Y Livewire no lo está procesando ('jsonFile' es una instancia de UploadedFile)
+            return $this->jsonFile instanceof UploadedFile;
+        }
+        return false; // Por defecto, deshabilitado
+    }
 
     public function updatedSource()
     {
@@ -220,6 +242,7 @@ class BuscarBoleto extends Component
                 // Obtener Comision
                 $this->porcentajeComision = $this->boletoInfo['commissionPercentage'];
                 $this->montoComision = $this->boletoInfo['commission'];
+                $this->montoComision = round(($this->montoComision * $this->igvPercentage),2) + $this->montoComision;
 
                 // Obtener Forma de pago
                 if(str_contains($this->boletoInfo['formOfPayment'],"CA")){
@@ -253,6 +276,12 @@ class BuscarBoleto extends Component
                     $this->idMedioPago = $oMp->id;
                 }
                 if(str_contains($this->boletoInfo['formOfPayment'],"AMERICAN EXPRESS")){
+                    $oTc = TarjetaCredito::where('codigo','AX')->first();
+                    $this->idTarjetaCredito = $oTc->id;
+                    $oMp = MedioPago::where('codigo','006')->first();
+                    $this->idMedioPago = $oMp->id;
+                }
+                if(str_contains($this->boletoInfo['formOfPayment'],"AMEX")){
                     $oTc = TarjetaCredito::where('codigo','AX')->first();
                     $this->idTarjetaCredito = $oTc->id;
                     $oMp = MedioPago::where('codigo','006')->first();
@@ -386,9 +415,9 @@ class BuscarBoleto extends Component
         $boleto->estado = 1;
         $boleto->usuarioCreacion = auth()->user()->id;
         $boleto->save();
-        $this->grabarPagosSabre($boleto->id);
         $this->grabarRutas($boleto->id, $this->boletoRutas);
         $this->crearFile($boleto);
+        $this->grabarPagosSabre($boleto->id);
     }
 
     public function grabarPagosSabre($idBoleto){
@@ -442,36 +471,43 @@ class BuscarBoleto extends Component
 
     public function crearFile($boleto){
         $fechaActual = Carbon::now();
-        if(!$this->checkFile and !$this->numeroFile){
-            $file = new File();
-            $file->numeroFile = $boleto->numeroFile;
-            $file->idArea = $boleto->idArea;
-            $file->idCliente = $boleto->idCliente;
-            $file->descripcion = $boleto->ruta;
-            $file->totalPago = 0;
-            $file->totalCobro = 0;
-            $file->fechaFile = Carbon::parse($fechaActual)->format("Y-m-d");
-            $file->idEstado = 1;
-            $file->usuarioCreacion = auth()->user()->id;
-            $file->save();
-
-            $fileDetalle = new FileDetalle();
-            $fileDetalle->idFile = $file->id;
-            $fileDetalle->numeroFile = $file->numeroFile;
-            $fileDetalle->idBoleto = $boleto->id;
-            $fileDetalle->idEstado = 1;
-            $fileDetalle->usuarioCreacion = auth()->user()->id;
-            $fileDetalle->save();
-        }else{
-            $oFile = File::where("numeroFile",$this->numeroFile)->first();
-            $fileDetalle = new FileDetalle();
-            $fileDetalle->idFile = $oFile->id;
-            $fileDetalle->numeroFile = $oFile->numeroFile;
-            $fileDetalle->idBoleto = $boleto->id;
-            $fileDetalle->idEstado = 1;
-            $fileDetalle->usuarioCreacion = auth()->user()->id;
-            $fileDetalle->save();
+        try {
+            if(!$this->checkFile and !$this->numeroFile){
+                $file = new File();
+                $file->numeroFile = $boleto->numeroFile;
+                $file->idArea = $boleto->idArea;
+                $file->idCliente = $boleto->idCliente;
+                $file->descripcion = $boleto->ruta;
+                $file->totalPago = 0;
+                $file->totalCobro = 0;
+                $file->fechaFile = Carbon::parse($fechaActual)->format("Y-m-d");
+                $file->idEstado = 1;
+                $file->usuarioCreacion = auth()->user()->id;
+                $file->save();
+    
+                $fileDetalle = new FileDetalle();
+                $fileDetalle->idFile = $file->id;
+                $fileDetalle->numeroFile = $file->numeroFile;
+                $fileDetalle->idBoleto = $boleto->id;
+                $fileDetalle->idEstado = 1;
+                $fileDetalle->usuarioCreacion = auth()->user()->id;
+                $fileDetalle->save();
+            }else{
+                $oFile = File::where("numeroFile",$this->numeroFile)->first();
+                $fileDetalle = new FileDetalle();
+                $fileDetalle->idFile = $oFile->id;
+                $fileDetalle->numeroFile = $oFile->numeroFile;
+                $fileDetalle->idBoleto = $boleto->id;
+                $fileDetalle->idEstado = 1;
+                $fileDetalle->usuarioCreacion = auth()->user()->id;
+                $fileDetalle->save();
+            }
+        } catch (\Exception $e) {
+            Log::error('Error en BuscarBoleto Livewire: ' . $e->getMessage(), ['exception' => $e]);
+            $this->errorMessage = 'Ocurrió un error inesperado al crear el File';
+            session()->flash('error', $this->errorMessage);
         }
+        
         
 
     }

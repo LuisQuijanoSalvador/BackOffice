@@ -57,6 +57,7 @@ class Boleto extends Model
         'cod3',
         'cod4',
         'observaciones',
+        'jsonBoleto',
         'idFee',
         'estado',
         'usuarioCreacion',

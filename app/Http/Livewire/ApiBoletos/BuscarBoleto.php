@@ -407,6 +407,7 @@ class BuscarBoleto extends Component
         $boleto->cod4 = ' ';
         $boleto->observaciones = ' ';
         $boleto->detalleRutas = $this->detalleRutas;
+        $boleto->jsonBoleto = json_encode($this->ticketData, JSON_PRETTY_PRINT);
         if($this->bookingAgent){
             $boleto->bookingAgent = $this->bookingAgent;
         }else{

@@ -62,7 +62,7 @@ class AlltechExport implements FromView, WithStyles
         ]);
 
         
-        $sheet->getStyle('A1:T1')->applyFromArray([
+        $sheet->getStyle('A1:U1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'size' => '9',

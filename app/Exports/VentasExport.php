@@ -24,27 +24,41 @@ class VentasExport implements FromView, WithStyles
     public function view(): View
     {
         // dd('Si llego aca');
+        $query = DB::table('vista_ventas');
+
         if($this->fechaInicio and $this->fechaFin and $this->idCliente){
-            return view('exports.reportes.ventas', [
-                'ventass' => DB::table('vista_ventas')
-                ->where('idCliente',$this->idCliente)
-                ->whereBetween('FechaEmision',[$this->fechaInicio, $this->fechaFin])
-                ->orderby('FechaEmision')
-                ->orderBy('pasajero')
-                ->orderBy('tipo')
-                ->get()
-            ]);
+            $query->where('idCliente',$this->idCliente)
+                   ->whereBetween('FechaEmision',[$this->fechaInicio, $this->fechaFin]);
+
+            // return view('exports.reportes.ventas', [
+            //     'ventass' => DB::table('vista_ventas')
+            //     ->where('idCliente',$this->idCliente)
+            //     ->whereBetween('FechaEmision',[$this->fechaInicio, $this->fechaFin])
+            //     ->orderby('FechaEmision')
+            //     ->orderBy('pasajero')
+            //     ->orderBy('tipo')
+            //     ->get()
+            // ]);
         }
         if($this->fechaInicio and $this->fechaFin and !$this->idCliente){
-            return view('exports.reportes.ventas', [
-                'ventass' => DB::table('vista_ventas')
-                ->whereBetween('FechaEmision',[$this->fechaInicio, $this->fechaFin])
-                ->orderby('FechaEmision')
+            $query->whereBetween('FechaEmision',[$this->fechaInicio, $this->fechaFin]); 
+            
+            // return view('exports.reportes.ventas', [
+            //     'ventass' => DB::table('vista_ventas')
+            //     ->whereBetween('FechaEmision',[$this->fechaInicio, $this->fechaFin])
+            //     ->orderby('FechaEmision')
+            //     ->orderBy('pasajero')
+            //     ->orderBy('tipo')
+            //     ->get()
+            // ]);
+        }
+        $datos = $query
+                ->orderBy('FechaEmision')
                 ->orderBy('pasajero')
                 ->orderBy('tipo')
-                ->get()
-            ]);
-        }
+                ->get();
+        
+        return view('exports.reportes.ventas',['ventass' => $datos]);
         
     }
     

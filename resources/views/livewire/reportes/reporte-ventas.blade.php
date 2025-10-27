@@ -2,7 +2,7 @@
     {{-- Stop trying to control. --}}
     <div class="row">
         <div class="col-md-3">
-            <select name="cliente" class="form-select" id="cboCliente" wire:model.lazy.defer="idCliente">
+            <select name="cliente" class="form-select" id="cboCliente" wire:model.live="idCliente">
                 <option>==Seleccione un Cliente==</option>
                 @foreach ($clientes as $cliente)
                     <option value={{$cliente->id}}>{{$cliente->razonSocial}}</option>
@@ -13,20 +13,20 @@
             <p style="text-align:right">F. inicio:</p>
         </div>
         <div class="col-md-2">
-            <input type="date" wire:model.lazy.defer="fechaInicio" id="fechaInicio">
+            <input type="date" wire:model.live="fechaInicio" id="fechaInicio">
         </div>
         <div class="col-md-1">
             <p style="text-align:right">F. Final:</p>
         </div>
         <div class="col-md-2">
-            <input type="date" wire:model.lazy.defer="fechaFin" id="fechaFin">
+            <input type="date" wire:model.live="fechaFin" id="fechaFin">
         </div>
         <div class="col-md-2">
-            <button type="button" class="btn btn-primary" wire:click="filtrar" >Filtrar</button>
+            {{--<button type="button" class="btn btn-primary" wire:click="filtrar" >Filtrar</button> --}}
         </div>
     </div>
     <hr>
-    <button @if(!$this->ventas) disabled @elseif(count($this->ventas) == 0) disabled @endif type="button" class="btn btn-success rounded" wire:click='exportar'>Exportar</button>
+    <button @if(!$datos) disabled @elseif(count($datos) == 0) disabled @endif type="button" class="btn btn-success rounded" wire:click='exportar'>Exportar</button>
     {{-- {{$this->fechaInicio}}{{$this->fechaFin}}{{$this->idCliente}} --}}
     <div class="contenedorTablaReport">
         <table class="tabla-listado">
@@ -119,8 +119,8 @@
                 </tr>
             </thead>
             <tbody>
-                @if($this->ventas)
-                    @foreach ($this->ventas as $venta)
+                @if($datos)
+                    @foreach ($datos as $venta)
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                             <td class="py-1">{{$venta->Origen}}</td>
                             <td class="py-1">{{$venta->Tipo}}</td>
@@ -156,4 +156,5 @@
             </tbody>
         </table>
     </div>
+    {{$datos->links()}}
 </div>

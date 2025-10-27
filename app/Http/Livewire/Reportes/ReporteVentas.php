@@ -25,7 +25,23 @@ class ReporteVentas extends Component
     public function render()
     {
         $clientes = Cliente::all()->sortBy('razonSocial');
-        return view('livewire.reportes.reporte-ventas',compact('clientes'));
+        $query = DB::table('vista_ventas');
+
+        if($this->fechaInicio and $this->fechaFin and $this->idCliente){
+            $query->where('idCliente',$this->idCliente)
+                   ->whereBetween('FechaEmision',[$this->fechaInicio, $this->fechaFin]);
+        }
+        if($this->fechaInicio and $this->fechaFin and !$this->idCliente){
+            $query->whereBetween('FechaEmision',[$this->fechaInicio, $this->fechaFin]); 
+        }
+        $datos = $query
+                ->orderBy('FechaEmision')
+                ->orderBy('pasajero')
+                ->orderBy('tipo')
+                ->paginate(10);
+        
+        // return view('livewire.reportes.reporte-ventas',compact('clientes'));
+        return view('livewire.reportes.reporte-ventas',['datos' => $datos, 'clientes' => $clientes]);
     }
 
     public function filtrar(){

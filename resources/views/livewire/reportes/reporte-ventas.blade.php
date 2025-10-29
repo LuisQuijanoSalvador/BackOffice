@@ -27,6 +27,9 @@
     </div>
     <hr>
     <button @if(!$datos) disabled @elseif(count($datos) == 0) disabled @endif type="button" class="btn btn-success rounded" wire:click='exportar'>Exportar</button>
+    <div wire:loading wire:target="exportar" class="text-primary">
+        <img src="{{ asset('img/loading.gif') }}" alt=""> <span style="color: rgb(66, 66, 66)">Procesando...</span>
+    </div>
     {{-- {{$this->fechaInicio}}{{$this->fechaFin}}{{$this->idCliente}} --}}
     <div class="contenedorTablaReport">
         <table class="tabla-listado">

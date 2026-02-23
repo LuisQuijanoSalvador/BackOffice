@@ -98,7 +98,41 @@
             </tbody>
         </table>
     </div>
-    <button @if(!$abonos) disabled @elseif(count($abonos) == 0) disabled @endif type="button" class="btn btn-success rounded" wire:click='exportar'>Exportar</button>
+    <div class="row">
+        <div class="col-md-8">
+            <button @if(!$abonos) disabled @elseif(count($abonos) == 0) disabled @endif type="button" class="btn btn-success rounded" wire:click='exportar'>Exportar</button>
+        </div>
+        <div class="col-md-4">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Ingrese el ID del Abono" aria-label="Recipient’s username" aria-describedby="button-addon2" wire:model.lazy.defer="idAbono">
+                <button class="btn btn-danger" type="button" id="brtnEliminar" data-bs-toggle="modal" data-bs-target="#modalEliminarAbono">Eliminar</button>
+            </div>
+            {{-- <input type="text" name="txtIdAbono" id="txtIdAbono">
+            <button type="button" class="btn btn-danger rounded" wire:click='exportar'>
+                Eliminar Abono
+            </button> --}}
+        </div>
+    </div>
+    
+    <!-- Modal para eliminar Abono-->
+    <div class="modal fade" id="modalEliminarAbono" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h1 class="modal-title fs-5" id="exampleModalLabel">Confirmación de Eliminación</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Está seguro de eliminar el abono? Esta acción no se puede deshacer.
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal" wire:click='eliminarAbono'>Eliminar</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
 
     {{-- Modal para visualizar --}}
     <div class="modal fade" id="modalVer" wire:ignore.self tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -176,6 +210,7 @@
                     <table class="tabla-listado">
                         <thead class="thead-listado">
                             <tr>
+                                <th scope="col">ID</th>
                                 <th scope="col">Abono</th>
                                 <th scope="col">Fecha</th>
                                 <th scope="col">Documento</th>
@@ -183,12 +218,14 @@
                                 <th scope="col">Abono</th>
                                 <th scope="col">Saldo</th>
                                 <th scope="col">Moneda</th>
+                                {{-- <th scope="col">Accion</th> --}}
                             </tr>
                         </thead>
                         <tbody>
                             @if($this->abonosVista)
                             @foreach ($this->abonosVista as $abono)
                                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                    <td class="py-1">{{$abono->id}}</td>
                                     <td class="py-1">{{$abono->numeroAbono}}</td>
                                     <td class="py-1">{{$abono->fechaAbono}}</td>
                                     <td class="py-1">{{$abono->Documento}}</td>
@@ -196,7 +233,14 @@
                                     <td class="py-1">{{$abono->Abono}}</td>
                                     <td class="py-1">{{$abono->Saldo}}</td>
                                     <td class="py-1">{{$abono->Moneda}}</td>
-                                    </td>
+                                    {{-- <td>
+                                        <button type="button" class="btn btn-danger btn-sm" 
+                                            data-bs-toggle="modal" data-bs-target="#ModalEliminacion"
+                                            wire:click='encontrar("{{$abono->id}}")' data-tippy-content="Quitar" wire:confirm="¿Estás seguro de eliminar este abono? Esta acción no se puede deshacer.">
+                                            <img src="{{ asset('img/delete.png')}}" width="20px" style="margin-bottom: 1px">
+                                            <i class="fa fa-trash"></i> 
+                                        </button>
+                                    </td> --}}
                                 </tr>
                             @endforeach
                             @endif

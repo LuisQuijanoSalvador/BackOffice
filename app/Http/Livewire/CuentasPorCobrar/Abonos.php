@@ -19,7 +19,7 @@ class Abonos extends Component
     public $selectedIds, $datos, $fechaAbono, $tipoCambio, $moneda = 1, $idBanco = 2, $idTarjetaCredito = 1,
     $idMedioPago = 1, $observaciones = '', $referencia = '', $totalPagos = 0, $totalAbono, $numDoc, $lBuscar = 0;
 
-    public $abonos,$abonosVista, $fechaInicio,$fechaFin;
+    public $abonos,$abonosVista, $fechaInicio,$fechaFin, $idAbono;
 
     public function mount(){
         $this->poblarGrid();
@@ -118,5 +118,31 @@ class Abonos extends Component
             return;
         }
         return Excel::download(new AbonoExport($this->fechaInicio,$this->fechaFin),'Abonos.xlsx');
+    }
+
+    public function eliminarAbono(){
+        if (!$this->idAbono){
+            session()->flash('error', 'Ingrese el ID del abono.');
+            $this->poblarGrid();
+        }else{
+            $abono = Abono::find($this->idAbono);
+            if($abono){
+                $cargo = Cargo::find($abono->idCargo);
+                $cargo->increment('saldo',$abono->monto);
+
+                $abono->delete();
+                $this->idAbono = NULL;
+
+                session()->flash('success', 'Abono eliminado correctamente.');
+                $this->poblarGrid();
+            }else{
+                session()->flash('error', 'No se encontró el abono.');
+                $this->poblarGrid();
+            }
+            
+        }
+        // $file = FileDetalle::find($id);
+        // $this->idRegistro = $file->id;
+        // $this->numeroFile = $file->numeroFile;
     }
 }

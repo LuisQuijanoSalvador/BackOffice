@@ -117,7 +117,7 @@ class CargosExport implements  FromView, WithStyles
                 ],
             ],
         ]);
-        $sheet->getStyle('B11:Q11')->applyFromArray([
+        $sheet->getStyle('B11:S11')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'size' => '9',

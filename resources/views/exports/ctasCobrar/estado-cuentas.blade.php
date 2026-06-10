@@ -77,6 +77,12 @@
                         N° TKT
                     </th>
                     <th scope="col" class="py-1 cursor-pointer">
+                        C. COSTO
+                    </th>
+                    <th scope="col" class="py-1 cursor-pointer">
+                        COD1
+                    </th>
+                    <th scope="col" class="py-1 cursor-pointer">
                         PASAJERO
                     </th>
                     <th scope="col" class="py-1 cursor-pointer">
@@ -122,6 +128,8 @@
                     <td class="py-1">{{\Carbon\Carbon::parse($estCuent->fechaEmision)->format('d-m-Y')}}</td>
                     <td class="py-1">{{\Carbon\Carbon::parse($estCuent->fechaVencimiento)->format('d-m-Y')}}</td>
                     <td class="py-1">{{$estCuent->numeroBoleto}}</td>
+                    <td class="py-1">{{$estCuent->centroCosto}}</td>
+                    <td class="py-1">{{$estCuent->Cod1}}</td>
                     {{-- <td class="py-1">@if($boleto->tDocumento){{$boleto->tDocumento->serie . '-' . str_pad($boleto->tDocumento->numero,8,"0",STR_PAD_LEFT)}}@else - @endif</td> --}}
                     <td class="py-1">{{$estCuent->pasajero}}</td>
                     <td class="py-1">{{$estCuent->tipoRuta}}</td>

@@ -337,7 +337,7 @@ class Integrador extends Component
 
             $fila = 5;
             if ($this->tipoDocumento == '01') {
-                foreach ($documentos as $documento) {
+                foreach ($documentosTransformados as $documento) {
 
                     $docCli = '';
                     $servicio = Servicio::where('idDocumento', $documento->id)->first();
@@ -564,7 +564,7 @@ class Integrador extends Component
             }
 
             if ($this->tipoDocumento == '03') {
-                foreach ($documentos as $documento) {
+                foreach ($documentosTransformados as $documento) {
                     $docCli = '';
                     $servicio = Servicio::where('idDocumento', $documento->id)->first();
 
@@ -787,7 +787,7 @@ class Integrador extends Component
             }
 
             if ($this->tipoDocumento == '36') {
-                foreach ($documentos as $documento) {
+                foreach ($documentosTransformados as $documento) {
                     $docCons = '';
                     $docCli = '';
                     $boleto = Boleto::where('idDocumento', $documento->id)->first();
@@ -910,7 +910,7 @@ class Integrador extends Component
             }
 
             if ($this->tipoDocumento == '07') {
-                foreach ($documentos as $documento) {
+                foreach ($documentosTransformados as $documento) {
                     $tipo = "";
                     $serie = substr($documento->documentoReferencia, 0, 4);
                     $numRefe = ltrim(substr($documento->documentoReferencia, 4), '0');

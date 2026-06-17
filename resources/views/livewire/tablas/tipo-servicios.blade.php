@@ -28,6 +28,12 @@
                         <i class="fas fa-sort float-right py-1 px-1"></i>
                     @endif
                 </th>
+                <th scope="col" class="py-1 cursor-pointer" wire:click="order('cuentaContableDolares')">
+                    Cuenta 
+                    @if ($sort == 'cuentaContableDolares')
+                        <i class="fas fa-sort float-right py-1 px-1"></i>
+                    @endif
+                </th>
                 <th scope="col" class="py-1 thAccion">
                     Acción
                 </th>
@@ -40,6 +46,7 @@
                 <td class="py-1">{{$tipoServicio->id}}</td>
                 <td class="py-1">{{$tipoServicio->descripcion}}</td>
                 <td class="py-1">{{$tipoServicio->codigo}}</td>
+                <td class="py-1">{{$tipoServicio->cuentaContableDolares}}</td>
                 <td class="py-1">
                     <div class="btn-group text-end" role="group" aria-label="Botones de accion">
                         <button type="button" class="btn btn-outline-primary mr-2 rounded" data-bs-toggle="modal" data-bs-target="#FormularioModal" wire:click='editar("{{$tipoServicio->id}}")'>Editar</button>
@@ -69,6 +76,13 @@
             <label for="txtMonto" class="form-label">Codigo:</label>
             <input type="text" class="form-control" id="txtMonto" wire:model="codigo" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
             @error('codigo')
+                <span class="error">{{$message}}</span>
+            @enderror
+        </div>
+        <div class="mb-3">
+            <label for="txtMonto" class="form-label">Cuenta Contable:</label>
+            <input type="text" class="form-control" id="txtMonto" wire:model="cuentaContableDolares" style="text-transform:uppercase;" onkeyup="javascript:this.value=this.value.toUpperCase();">
+            @error('cuentaContableDolares')
                 <span class="error">{{$message}}</span>
             @enderror
         </div>

@@ -12,6 +12,7 @@ class TipoServicio extends Model
     protected $fillable = [
         'descripcion',
         'codigo',
+        'cuentaContableDolares',
         'usuarioCreacion',
         'usuarioModificacion'
     ];

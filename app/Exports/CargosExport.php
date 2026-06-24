@@ -37,12 +37,22 @@ class CargosExport implements  FromView, WithStyles
                         ->sum('total');
         // dd($suma);
         $this->razonSocial = $cliente->razonSocial;
-        return view('exports.ctasCobrar.estado-cuentas', [
+        if($cliente->tipoFacturacion == 1){
+            return view('exports.ctasCobrar.estado-cuentas', [
             'cargos' => DB::table('vista_estadocuenta')
                             ->where('idCliente', $this->idCliente)
                             ->whereBetween('fechaEmision',[$this->fechaInicio, $this->fechaFin])
                             ->get()
         ],compact('cliente','counter','suma'));
+        }else{
+            return view('exports.ctasCobrar.estado-cuentas', [
+                'cargos' => DB::table('vista_estadocuenta_acumulado')
+                                ->where('idCliente', $this->idCliente)
+                                ->whereBetween('fechaEmision',[$this->fechaInicio, $this->fechaFin])
+                                ->get()
+            ],compact('cliente','counter','suma'));
+        }
+        
     }
 
     public function styles(Worksheet $sheet)

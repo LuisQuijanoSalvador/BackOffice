@@ -338,54 +338,54 @@ return [
             'text'        => 'Facturación',
             'url'         => 'admin/pages',
             'icon'        => 'fas fa-file',
-            'submenu'=>[
+            'submenu' => [
                 [
                     'text' => 'Boletos',
                     'url'     => '#',
                     'icon'    => 'fas fa-plane',
-                    'submenu'=>[
+                    'submenu' => [
                         [
                             'text' => 'Inmediata',
                             'route' => 'factinmediata'
-                        ], 
+                        ],
                         [
                             'text' => 'Acumulada',
                             'route' => 'factboletosac'
                         ],
-                    ]  
+                    ]
                 ],
                 [
                     'text' => 'Servicios',
                     'url'     => '#',
                     'icon'    => 'fas fa-tag',
-                    'submenu'=>[
+                    'submenu' => [
                         [
                             'text' => 'Inmediata',
                             'route' => 'factinmediataserv'
-                        ], 
+                        ],
                         [
                             'text' => 'Acumulada',
                             'route' => 'factacumuladaserv'
                         ],
                     ]
-                    ],
-                    [
-                        'text' => 'Nota de Credito',
-                        'route' => 'notaCredito',
-                        'icon'    => 'fas fa-file-invoice'
-                    ],
-                    [
-                        'text' => 'Documentos',
-                        'route' => 'listaDocumentos',
-                        'icon'    => 'fas fa-layer-group'
-                    ]
+                ],
+                [
+                    'text' => 'Nota de Credito',
+                    'route' => 'notaCredito',
+                    'icon'    => 'fas fa-file-invoice'
+                ],
+                [
+                    'text' => 'Documentos',
+                    'route' => 'listaDocumentos',
+                    'icon'    => 'fas fa-layer-group'
+                ]
             ]
         ],
         [
             'text'        => 'Cuentas por Cobrar',
             'url'         => 'admin/pages',
             'icon'        => 'fas fa-clipboard',
-            'submenu'=>[
+            'submenu' => [
                 [
                     'text' => 'Cargos',
                     'route' => 'rCargos'
@@ -397,6 +397,10 @@ return [
                 [
                     'text' => 'Estados de Cuenta',
                     'route' => 'rEstadosdecuenta'
+                ],
+                [
+                    'text' => 'Consolidado',
+                    'route' => 'reportes.cuentas-por-cobrar'
                 ]
             ]
         ],
@@ -404,7 +408,7 @@ return [
             'text'        => 'Compras',
             'url'         => 'admin/pages',
             'icon'        => 'fas fa-cart-plus',
-            'submenu'=>[
+            'submenu' => [
                 [
                     'text' => 'Compras',
                     'route' => 'listaCompras'
@@ -429,7 +433,7 @@ return [
             'icon'        => 'fas fa-building',
             // 'label'       => 4,
             // 'label_color' => 'success',
-            'submenu'=>[
+            'submenu' => [
                 [
                     'text' => 'Usuarios',
                     'route' => 'listaUsuarios'
@@ -470,7 +474,7 @@ return [
             'icon'        => 'fas fa-table',
             // 'label'       => 4,
             // 'label_color' => 'success',
-            'submenu'=>[
+            'submenu' => [
                 [
                     'text' => 'Tipo Cambio',
                     'route' => 'listaTipoCambio'
@@ -549,7 +553,7 @@ return [
             'text'        => 'Reportes',
             'url'         => 'admin/pages',
             'icon'        => 'fas fa-scroll',
-            'submenu'=>[
+            'submenu' => [
                 [
                     'text' => 'Margenes',
                     'route' => 'rptMargenes'
@@ -588,9 +592,9 @@ return [
             'text'        => 'Contabilidad',
             'route'         => 'rIntegrador',
             'icon'        => 'fas fa-book',
-            
+
         ],
-        
+
 
 
 
@@ -716,6 +720,15 @@ return [
                 ],
             ],
         ],
+        // 'FontAwesome' => [
+        //     'active' => true,
+        //     'files' => [
+        //         [
+        //             'type' => 'css',
+        //             'file' => 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css',
+        //         ],
+        //     ],
+        // ],
         'Select2' => [
             'active' => false,
             'files' => [

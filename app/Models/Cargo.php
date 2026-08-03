@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Carbon\Carbon;
 
 class Cargo extends Model
 {
     use HasFactory;
+    protected $table = 'cargos';
 
     protected $fillable = [
         'idDocumento',
@@ -42,6 +45,14 @@ class Cargo extends Model
         'idEstado',
         'usuarioCreacion',
         'usuarioModificacion',
+    ];
+
+    protected $casts = [
+        'fechaEmision' => 'date',
+        'fechaVencimiento' => 'date',
+        'montoCargo' => 'decimal:2',
+        'saldo' => 'decimal:2',
+        'total' => 'decimal:2',
     ];
 
     public function tEstado(){
@@ -83,4 +94,49 @@ class Cargo extends Model
     public function tSolicitante(){
         return $this->hasOne(Solicitante::class,'id','idSolicitante');
     }
+
+    public function cliente(): BelongsTo
+    {
+        return $this->belongsTo(Cliente::class, 'idCliente');
+    }
+
+    public function documento(): BelongsTo
+    {
+        return $this->belongsTo(Documento::class, 'idDocumento');
+    }
+
+    public function abonos()
+    {
+        return $this->hasMany(Abono::class, 'idCargo');
+    }
+
+    // Calcular días de atraso
+    public function getDiasAtrasoAttribute()
+    {
+        if ($this->saldo <= 0) {
+            return 0;
+        }
+
+        $hoy = Carbon::today();
+        $fechaVencimiento = Carbon::parse($this->fechaVencimiento);
+
+        if ($hoy->gt($fechaVencimiento)) {
+            return $hoy->diffInDays($fechaVencimiento);
+        }
+
+        return 0;
+    }
+
+    // Verificar si está vencido
+    public function getEstaVencidoAttribute()
+    {
+        return $this->saldo > 0 && $this->diasAtraso > 0;
+    }
+
+    // Calcular deuda vencida
+    public function getDeudaVencidaAttribute()
+    {
+        return $this->estaVencido ? $this->saldo : 0;
+    }
+
 }

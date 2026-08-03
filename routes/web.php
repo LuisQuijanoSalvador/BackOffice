@@ -8,6 +8,8 @@ use App\Http\Livewire\Entidades\Usuarios;
 use App\Http\Livewire\Compras\EditCompra;
 use App\Http\Controllers\AbonoController;
 use App\Http\Livewire\Compras\ReporteComprasPorFecha;
+use App\Http\Livewire\CuentasPorCobrarReport;
+use App\Http\Controllers\ReportesController;
 
 
 /*
@@ -35,108 +37,223 @@ Route::get('/', function () {
 //     })->name('dashboard');
 // });
 
-Route::group(['prefix'=>'admin'],function(){
-    Route::get('Inicio',[IndexController::class, 'index'])->name('inicio');
+Route::group(['prefix' => 'admin'], function () {
+    Route::get('Inicio', [IndexController::class, 'index'])->name('inicio');
 });
 // Route::group(['prefix'=>'entidades'],function(){
-    
+
 // });
 
 Route::middleware(['auth'])->group(function () {
-    Route::group(['prefix'=>'gestion'],function(){
-        Route::get('boletos', function(){ return view('gestion.boletos');})->name('listaBoletos');
-        Route::get('servicios', function(){ return view('gestion.servicios');})->name('listaServicios');
-        Route::get('integrador', function(){ return view('gestion.integrador');})->name('integradorBoletos');
-        Route::get('buscarBoleto', function(){ return view('api-boletos.buscar-boleto');})->name('buscarBoleto');
+    Route::group(['prefix' => 'gestion'], function () {
+        Route::get('boletos', function () {
+            return view('gestion.boletos');
+        })->name('listaBoletos');
+        Route::get('servicios', function () {
+            return view('gestion.servicios');
+        })->name('listaServicios');
+        Route::get('integrador', function () {
+            return view('gestion.integrador');
+        })->name('integradorBoletos');
+        Route::get('buscarBoleto', function () {
+            return view('api-boletos.buscar-boleto');
+        })->name('buscarBoleto');
     });
 
-    Route::group(['prefix'=>'facturacion'],function(){
-        Route::get('inmediata', function(){ return view('gestion.facturacion');})->name('factinmediata');
-        Route::get('acumuladaboletos', function(){ return view('gestion.facturacionac');})->name('factboletosac');
+    Route::group(['prefix' => 'facturacion'], function () {
+        Route::get('inmediata', function () {
+            return view('gestion.facturacion');
+        })->name('factinmediata');
+        Route::get('acumuladaboletos', function () {
+            return view('gestion.facturacionac');
+        })->name('factboletosac');
 
-        Route::get('inmediataservicios', function(){ return view('gestion.facturacionserv');})->name('factinmediataserv');
-        Route::get('acumuladaservicios', function(){ return view('gestion.facturacionservac');})->name('factacumuladaserv');
+        Route::get('inmediataservicios', function () {
+            return view('gestion.facturacionserv');
+        })->name('factinmediataserv');
+        Route::get('acumuladaservicios', function () {
+            return view('gestion.facturacionservac');
+        })->name('factacumuladaserv');
 
-        Route::get('notascredito', function(){ return view('gestion.notas-credito');})->name('notaCredito');
-        
-        Route::get('documentos', function(){ return view('gestion.documentos');})->name('listaDocumentos');
-        
+        Route::get('notascredito', function () {
+            return view('gestion.notas-credito');
+        })->name('notaCredito');
+
+        Route::get('documentos', function () {
+            return view('gestion.documentos');
+        })->name('listaDocumentos');
     });
 
-    Route::group(['prefix'=>'cuentaporcobrar'],function(){
-        Route::get('cargos', function(){ return view('cuentas-por-cobrar.abonos');})->name('rCargos');
-        Route::get('abonos', function(){ return view('cuentas-por-cobrar.abonosedit');})->name('rAbonosVista');
-        Route::get('abonopago/{datosJson}', function($datosJson){
+    Route::group(['prefix' => 'cuentaporcobrar'], function () {
+        Route::get('cargos', function () {
+            return view('cuentas-por-cobrar.abonos');
+        })->name('rCargos');
+        Route::get('abonos', function () {
+            return view('cuentas-por-cobrar.abonosedit');
+        })->name('rAbonosVista');
+        Route::get('abonopago/{datosJson}', function ($datosJson) {
             $datos = json_decode($datosJson, true);
             return view('cuentas-por-cobrar.abonopago', compact('datos'));
         })->name('rAbonopago');
 
-        Route::get('estadodecuenta', function(){ return view('cuentas-por-cobrar.estado-cuenta');})->name('rEstadosdecuenta');
+        Route::get('estadodecuenta', function () {
+            return view('cuentas-por-cobrar.estado-cuenta');
+        })->name('rEstadosdecuenta');
+        // Route::get('consolidado', CuentasPorCobrarReport::class)
+        //     ->name('reportes.cuentas-por-cobrar')
+        //     ->middleware('auth');
+        Route::get('consolidado', function () {
+            return view('consolidadoporcobrar');
+        })->name('reportes.cuentas-por-cobrar')->middleware('auth');
     });
 
-    Route::group(['prefix'=>'compras'],function(){
-        Route::get('compras', function(){ return view('compras.compra');})->name('listaCompras');
-        Route::get('nuevo', function(){ return view('compras.nuevaCompra');})->name('nuevaCompra');
+    Route::group(['prefix' => 'compras'], function () {
+        Route::get('compras', function () {
+            return view('compras.compra');
+        })->name('listaCompras');
+        Route::get('nuevo', function () {
+            return view('compras.nuevaCompra');
+        })->name('nuevaCompra');
         // Route::get('{id}/editar', function(){ return view('compras.editCompra');})->name('editarCompra');
         // Route::get('{compra}/editar', EditCompra::class)->name('editarCompra');
-        Route::get('{compraId}/editar', function($compraId){
+        Route::get('{compraId}/editar', function ($compraId) {
             // Aquí pasas el ID directamente a la vista
             return view('compras.editCompra', ['compraId' => $compraId]);
         })->name('editarCompra');
-        Route::get('suppliers', function(){ return view('compras.suppliers');})->name('suppliersList');
-        Route::get('reporte-fechas', function(){ return view('compras.repFechas');})->name('repFechas');
-        Route::get('reporte-proveedor', function(){ return view('compras.repProveedor');})->name('repProveedor');
+        Route::get('suppliers', function () {
+            return view('compras.suppliers');
+        })->name('suppliersList');
+        Route::get('reporte-fechas', function () {
+            return view('compras.repFechas');
+        })->name('repFechas');
+        Route::get('reporte-proveedor', function () {
+            return view('compras.repProveedor');
+        })->name('repProveedor');
     });
 
 
-    Route::group(['prefix'=>'entidades'],function(){
-        Route::get('usuarios', function(){ return view('entidades.usuarios');})->name('listaUsuarios');
-        Route::get('counters', function(){ return view('entidades.counters');})->name('listaCounters');
-        Route::get('cobradores', function(){ return view('entidades.cobradors');})->name('listaCobradores');
-        Route::get('vendedores', function(){ return view('entidades.vendedors');})->name('listaVendedores');
-        Route::get('clientes', function(){ return view('entidades.clientes');})->name('listaClientes');
-        Route::get('proveedores', function(){ return view('entidades.proveedors');})->name('listaProveedores');
-        Route::get('solicitantes', function(){ return view('entidades.solicitantes');})->name('listaSolicitantes');
-        Route::get('aerolineas', function(){ return view('entidades.aerolineas');})->name('listaAerolineas');
+    Route::group(['prefix' => 'entidades'], function () {
+        Route::get('usuarios', function () {
+            return view('entidades.usuarios');
+        })->name('listaUsuarios');
+        Route::get('counters', function () {
+            return view('entidades.counters');
+        })->name('listaCounters');
+        Route::get('cobradores', function () {
+            return view('entidades.cobradors');
+        })->name('listaCobradores');
+        Route::get('vendedores', function () {
+            return view('entidades.vendedors');
+        })->name('listaVendedores');
+        Route::get('clientes', function () {
+            return view('entidades.clientes');
+        })->name('listaClientes');
+        Route::get('proveedores', function () {
+            return view('entidades.proveedors');
+        })->name('listaProveedores');
+        Route::get('solicitantes', function () {
+            return view('entidades.solicitantes');
+        })->name('listaSolicitantes');
+        Route::get('aerolineas', function () {
+            return view('entidades.aerolineas');
+        })->name('listaAerolineas');
     });
 
-    Route::group(['prefix'=>'tablas'],function(){
-        Route::get('estados', function(){ return view('tablas.estados');})->name('listaEstados');
-        Route::get('roles', function(){ return view('tablas.roles');})->name('listaRoles');
-        Route::get('tipodocumentoidentidad', function(){ return view('tablas.tipo-documento-identidad');})->name('listaTipoDocIdentidad');
-        Route::get('tipocliente', function(){ return view('tablas.tipo-clientes');})->name('listaTipoCLiente');
-        Route::get('tipocambio', function(){ return view('tablas.tipo-cambios');})->name('listaTipoCambio');
-        Route::get('tipodocumento', function(){ return view('tablas.tipo-documentos');})->name('listaTipoDocumento');
-        Route::get('mediopago', function(){ return view('tablas.medio-pagos');})->name('listaMedioPago');
-        Route::get('tipofacturacion', function(){ return view('tablas.tipo-facturacions');})->name('listaTipoFacturacion');
-        Route::get('tipopasajero', function(){ return view('tablas.tipo-pasajeros');})->name('listaTipoPasajeros');
-        Route::get('tiposervicio', function(){ return view('tablas.tipo-servicios');})->name('listaTipoServicios');
-        Route::get('tarjetacredito', function(){ return view('tablas.tarjeta-creditos');})->name('listaTarjetaCreditos');
-        Route::get('monedas', function(){ return view('tablas.monedas');})->name('listaMonedas');
-        Route::get('areas', function(){ return view('tablas.areas');})->name('listaAreas');
-        Route::get('correlativos', function(){ return view('tablas.correlativos');})->name('listaCorrelativos');
-        Route::get('gds', function(){ return view('tablas.gdss');})->name('listaGds');
-        Route::get('tipoTickets', function(){ return view('tablas.tipo-tickets');})->name('listaTipoTickets');
-        Route::get('tipoPagos', function(){ return view('tablas.tipo-pagos');})->name('listaTipoPagos');
-        Route::get('bancos', function(){ return view('tablas.bancos');})->name('listaBancos');
+    Route::group(['prefix' => 'tablas'], function () {
+        Route::get('estados', function () {
+            return view('tablas.estados');
+        })->name('listaEstados');
+        Route::get('roles', function () {
+            return view('tablas.roles');
+        })->name('listaRoles');
+        Route::get('tipodocumentoidentidad', function () {
+            return view('tablas.tipo-documento-identidad');
+        })->name('listaTipoDocIdentidad');
+        Route::get('tipocliente', function () {
+            return view('tablas.tipo-clientes');
+        })->name('listaTipoCLiente');
+        Route::get('tipocambio', function () {
+            return view('tablas.tipo-cambios');
+        })->name('listaTipoCambio');
+        Route::get('tipodocumento', function () {
+            return view('tablas.tipo-documentos');
+        })->name('listaTipoDocumento');
+        Route::get('mediopago', function () {
+            return view('tablas.medio-pagos');
+        })->name('listaMedioPago');
+        Route::get('tipofacturacion', function () {
+            return view('tablas.tipo-facturacions');
+        })->name('listaTipoFacturacion');
+        Route::get('tipopasajero', function () {
+            return view('tablas.tipo-pasajeros');
+        })->name('listaTipoPasajeros');
+        Route::get('tiposervicio', function () {
+            return view('tablas.tipo-servicios');
+        })->name('listaTipoServicios');
+        Route::get('tarjetacredito', function () {
+            return view('tablas.tarjeta-creditos');
+        })->name('listaTarjetaCreditos');
+        Route::get('monedas', function () {
+            return view('tablas.monedas');
+        })->name('listaMonedas');
+        Route::get('areas', function () {
+            return view('tablas.areas');
+        })->name('listaAreas');
+        Route::get('correlativos', function () {
+            return view('tablas.correlativos');
+        })->name('listaCorrelativos');
+        Route::get('gds', function () {
+            return view('tablas.gdss');
+        })->name('listaGds');
+        Route::get('tipoTickets', function () {
+            return view('tablas.tipo-tickets');
+        })->name('listaTipoTickets');
+        Route::get('tipoPagos', function () {
+            return view('tablas.tipo-pagos');
+        })->name('listaTipoPagos');
+        Route::get('bancos', function () {
+            return view('tablas.bancos');
+        })->name('listaBancos');
     });
 
-    Route::group(['prefix'=>'reportes'],function(){
-        Route::get('margenes', function(){ return view('reportes.margenes');})->name('rptMargenes');
-        Route::get('comisionconsolidador', function(){ return view('reportes.comisionConsolidador');})->name('rptComisionConsolidador');
-        Route::get('conciliacion', function(){ return view('reportes.conciliacion');})->name('rptConciliacion');
-        Route::get('comisiones', function(){ return view('reportes.comisiones');})->name('rptComision');
-        Route::get('ventas', function(){ return view('reportes.reporte-ventas');})->name('rptVentas');
-        Route::get('ventasalltech', function(){ return view('reportes.reporte-alltech');})->name('rptVentasAlltech');
-        Route::get('segmentos', function(){ return view('reportes.segmentos');})->name('rptSegmentos');
-        Route::get('abonos', function(){ return view('reportes.reporte-abonos');})->name('rptAbonos');
+    Route::group(['prefix' => 'reportes'], function () {
+        Route::get('margenes', function () {
+            return view('reportes.margenes');
+        })->name('rptMargenes');
+        Route::get('comisionconsolidador', function () {
+            return view('reportes.comisionConsolidador');
+        })->name('rptComisionConsolidador');
+        Route::get('conciliacion', function () {
+            return view('reportes.conciliacion');
+        })->name('rptConciliacion');
+        Route::get('comisiones', function () {
+            return view('reportes.comisiones');
+        })->name('rptComision');
+        Route::get('ventas', function () {
+            return view('reportes.reporte-ventas');
+        })->name('rptVentas');
+        Route::get('ventasalltech', function () {
+            return view('reportes.reporte-alltech');
+        })->name('rptVentasAlltech');
+        Route::get('segmentos', function () {
+            return view('reportes.segmentos');
+        })->name('rptSegmentos');
+        Route::get('abonos', function () {
+            return view('reportes.reporte-abonos');
+        })->name('rptAbonos');
     });
-    Route::group(['prefix'=>'files'],function(){
-        Route::get('files', function(){ return view('files.files');})->name('listaFiles');
-        Route::get('editarFile/{id}', function(){ return view('files.editar-files');})->name('editarFiles');
+    Route::group(['prefix' => 'files'], function () {
+        Route::get('files', function () {
+            return view('files.files');
+        })->name('listaFiles');
+        Route::get('editarFile/{id}', function () {
+            return view('files.editar-files');
+        })->name('editarFiles');
     });
-    Route::group(['prefix'=>'contabilidad'],function(){
-        Route::get('integrador', function(){ return view('contabilidad.integrador');})->name('rIntegrador');
+    Route::group(['prefix' => 'contabilidad'], function () {
+        Route::get('integrador', function () {
+            return view('contabilidad.integrador');
+        })->name('rIntegrador');
     });
 });
 

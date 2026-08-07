@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class EstadoCuenta extends Component
 {
-    public $clientes, $idCliente, $fechaInicio, $fechaFinal,$estadoCuentas;
+    public $clientes, $idCliente = 0, $fechaInicio, $fechaFinal,$estadoCuentas;
     // protected $estadoCuenta = null;
 
     public function mount(){
@@ -32,15 +32,7 @@ class EstadoCuenta extends Component
         
     }
 
-    public function buscar(){
-        // $this->estadoCuentas = NULL;
-        // $this->estadoCuentas = Cargo::where('idCliente', $this->idCliente)
-        //                             ->where('idEstado',1)
-        //                             ->where('saldo','>',0)
-        //                             ->whereBetween('fechaEmision', [$this->fechaInicio, $this->fechaFinal])
-        //                             ->orderBy('fechaEmision', 'asc')
-        //                             ->get();
-       
+    public function buscar(){      
         $cliente = Cliente::find($this->idCliente);
         if($cliente){
             if($cliente->tipoFacturacion == 1){
@@ -56,9 +48,7 @@ class EstadoCuenta extends Component
             }
         }else{
             session()->flash('error', 'Seleccione un cliente');
-        }
-        
-                                    
+        }                            
     }
 
     public function exportar(){

@@ -76,4 +76,9 @@ class Cliente extends Model
     public function tEstado(){
         return $this->hasOne(Estado::class,'id','estado');
     }
+
+    public function cargos()
+    {
+        return $this->hasMany(Cargo::class, 'idCliente', 'id'); // Ajusta las llaves foráneas si es necesario
+    }
 }

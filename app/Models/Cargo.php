@@ -55,44 +55,54 @@ class Cargo extends Model
         'total' => 'decimal:2',
     ];
 
-    public function tEstado(){
-        return $this->hasOne(Estado::class,'id','idEstado');
+    public function tEstado()
+    {
+        return $this->hasOne(Estado::class, 'id', 'idEstado');
     }
 
-    public function tDocumento(){
-        return $this->hasOne(Documento::class,'id','idDocumento');
+    public function tDocumento()
+    {
+        return $this->hasOne(Documento::class, 'id', 'idDocumento');
     }
 
-    public function tCliente(){
-        return $this->hasOne(Cliente::class,'id','idCliente');
+    public function tCliente()
+    {
+        return $this->hasOne(Cliente::class, 'id', 'idCliente');
     }
 
-    public function tCobrador(){
-        return $this->hasOne(Cobrador::class,'id','idCobrador');
+    public function tCobrador()
+    {
+        return $this->hasOne(Cobrador::class, 'id', 'idCobrador');
     }
 
-    public function tCounter(){
-        return $this->hasOne(Counter::class,'id','idCounter');
+    public function tCounter()
+    {
+        return $this->hasOne(Counter::class, 'id', 'idCounter');
     }
 
-    public function tAerolinea(){
-        return $this->hasOne(Aerolinea::class,'id','idAerolinea');
+    public function tAerolinea()
+    {
+        return $this->hasOne(Aerolinea::class, 'id', 'idAerolinea');
     }
 
-    public function tProveedor(){
-        return $this->hasOne(Proveedor::class,'id','idProveedor');
+    public function tProveedor()
+    {
+        return $this->hasOne(Proveedor::class, 'id', 'idProveedor');
     }
 
-    public function tBoleto(){
-        return $this->hasOne(Boleto::class,'id','idBoleto');
+    public function tBoleto()
+    {
+        return $this->hasOne(Boleto::class, 'id', 'idBoleto');
     }
 
-    public function tServicio(){
-        return $this->hasOne(Servicio::class,'id','idServicio');
+    public function tServicio()
+    {
+        return $this->hasOne(Servicio::class, 'id', 'idServicio');
     }
 
-    public function tSolicitante(){
-        return $this->hasOne(Solicitante::class,'id','idSolicitante');
+    public function tSolicitante()
+    {
+        return $this->hasOne(Solicitante::class, 'id', 'idSolicitante');
     }
 
     public function cliente(): BelongsTo
@@ -138,5 +148,4 @@ class Cargo extends Model
     {
         return $this->estaVencido ? $this->saldo : 0;
     }
-
 }

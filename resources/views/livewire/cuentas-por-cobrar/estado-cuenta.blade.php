@@ -13,9 +13,9 @@
     <div class="contenedorFiltro">
         <div class="row">
             <div class="col-md-4">
-                <label for="selectedCliente">Seleccione Cliente:</label>
+                <label for="selectedCliente">Seleccione Cliente: </label>
                 <select name="selectedCliente" style="width: 100%; display:block;font-size: 0.9em; height:31px;"
-                    class="rounded" id="cboCliente" wire:model.lazy.defer="idCliente">
+                    class="rounded" id="cboCliente" wire:model.number="idCliente">
                     <option value="0">-- Todos --</option>
                     @foreach ($clientes as $cliente)
                         <option value="{{ $cliente->id }}">{{ $cliente->razonSocial }}</option>
@@ -37,27 +37,45 @@
             <div class="col-md-2">
                 <br>
                 {{-- <button type="button" class="btn btn-primary rounded" wire:click='buscar'> --}}
-                <button type="button" class="btn btn-primary rounded" wire:click="exportar"
-                    wire:loading.attr="disabled" wire:loading.class="disabled">
+                @if($idCliente != 0)
+                    <button type="button" class="btn btn-primary rounded" wire:click="buscar"
+                        wire:loading.attr="disabled" wire:loading.class="disabled">
 
-                    {{-- Se muestra SOLO cuando NO está procesando --}}
-                    <span wire:loading.remove wire:target="exportar">
-                        <i class="fas fa-file-excel me-2"></i> Exportar
-                    </span>
+                        {{-- Se muestra SOLO cuando NO está procesando --}}
+                        <span wire:loading.remove wire:target="buscar">
+                            <i class="fas fa-search me-2"></i> Buscar
+                        </span>
 
-                    {{-- Se muestra SOLO mientras procesa --}}
-                    <span wire:loading wire:target="exportar">
-                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                        Procesando...
-                    </span>
-                </button>
+                        {{-- Se muestra SOLO mientras procesa --}}
+                        <span wire:loading wire:target="buscar">
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            Procesando...
+                        </span>
+                    </button>
+                @else
+                    <button type="button" class="btn btn-primary rounded" wire:click="exportar"
+                        wire:loading.attr="disabled" wire:loading.class="disabled">
+
+                        {{-- Se muestra SOLO cuando NO está procesando --}}
+                        <span wire:loading.remove wire:target="exportar">
+                            <i class="fas fa-file-excel me-2"></i> Exportar
+                        </span>
+
+                        {{-- Se muestra SOLO mientras procesa --}}
+                        <span wire:loading wire:target="exportar">
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            Procesando...
+                        </span>
+                    </button>
+                @endif
             </div>
         </div>
     </div>
     <hr>
-    {{-- <button @if (!$estadoCuentas) disabled @elseif(count($estadoCuentas) == 0) disabled @endif
-        type="button" class="btn btn-success rounded" wire:click='exportar'>Exportar</button> --}}
-
+    @if($idCliente != 0)
+        <button @if (!$estadoCuentas) disabled @elseif(count($estadoCuentas) == 0) disabled @endif
+            type="button" class="btn btn-success rounded" wire:click='exportar'>Exportar</button>
+    @endif
     <div class="contenedorTablaCC">
         <table class="tabla-listado">
             <thead class="thead-listadoCC">

@@ -23,16 +23,21 @@ class EstadoCuenta extends Component
         $this->fechaFinal = Carbon::parse($fechaActual)->format("Y-m-d");
         // $this->estadoCuenta = collect();
     }
-
+    
+    public function updatedidCliente($value)
+    {
+        // $value contiene el ID o valor seleccionado (ej: "1" o "2")
+        // dd("El usuario seleccionó: " . $value);
+        $this->estadoCuentas = NULL;
+    }
     public function render()
     {
         // $estCuentas = $this->estadoCuenta;
         
         return view('livewire.cuentas-por-cobrar.estado-cuenta');
-        
     }
 
-    public function buscar(){      
+    public function buscar(){    
         $cliente = Cliente::find($this->idCliente);
         if($cliente){
             if($cliente->tipoFacturacion == 1){

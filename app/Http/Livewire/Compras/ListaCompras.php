@@ -14,7 +14,7 @@ class ListaCompras extends Component
 {
     use WithPagination;
     
-    public $fechaInicio, $fechaFin, $filtroProveedor, $filtroDocumento;
+    public $fechaInicio, $fechaFin, $filtroProveedor, $filtroDocumento, $proveedores, $tiposDocumento;
     public $filtro = 'fechas';
     public $search = '';
     public $perPage = 10;

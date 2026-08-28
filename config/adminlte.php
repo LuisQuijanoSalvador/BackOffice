@@ -405,6 +405,29 @@ return [
             ]
         ],
         [
+            'text'        => 'Cuentas por Pagar',
+            'url'         => 'admin/pages',
+            'icon'        => 'fas fa-clipboard',
+            'submenu' => [
+                [
+                    'text' => 'Cargos',
+                    'route' => 'rListaCargos'
+                ],
+                [
+                    'text' => 'Abonos',
+                    'route' => 'abonos.index'
+                ],
+                [
+                    'text' => 'Egresos ',
+                    'route' => 'egresos.index'
+                ],
+                // [
+                //     'text' => 'Consolidado',
+                //     'route' => 'reportes.cuentas-por-cobrar'
+                // ]
+            ]
+        ],
+        [
             'text'        => 'Compras',
             'url'         => 'admin/pages',
             'icon'        => 'fas fa-cart-plus',

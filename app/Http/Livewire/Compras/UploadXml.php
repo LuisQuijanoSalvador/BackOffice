@@ -9,6 +9,7 @@ use App\Models\TipoDocumento;
 use App\Models\Compra;
 use App\Models\CompraDetalle;
 use App\Models\Estado;
+use App\Models\MedioPago;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use SimpleXMLElement;
@@ -18,10 +19,13 @@ class UploadXml extends Component
 {
     use WithFileUploads;
 
-    public $xmlFile;
+    public $xmlFile, $tasaIGV, $medioPagoId;
     public $message = '';
     public $error = '';
     public $loading = false;
+    public $mediosPago = [];
+    public $bancoId = '';
+    public $bancos = [];
 
     protected $documentTypeMap = [
         '01' => 1, // Ejemplo: Factura
@@ -33,7 +37,9 @@ class UploadXml extends Component
     public function mount()
     {
         // Obtener la tasa de IGV de la configuración 
-        $this->tasaIGV = config('taxes.igv_rate', 0.18); 
+        $this->tasaIGV = config('taxes.igv_rate', 0.18);
+        $this->mediosPago = MedioPago::orderBy('descripcion')->get();
+        $this->bancos = \App\Models\Banco::where('idEstado', 1)->orderBy('nombre')->get(); // Ajusta el filtro de estado si tu tabla usa otro campo
     }
 
     public function processXml()
@@ -43,11 +49,16 @@ class UploadXml extends Component
 
         $this->validate([
             'xmlFile' => 'required|file|mimes:xml|max:5120',
+            'medioPagoId' => 'required',
+            'bancoId' => $this->medioPagoId != 10 ? 'required|exists:bancos,id' : 'nullable', // Condicional
         ], [
             'xmlFile.required' => 'Debe seleccionar un archivo XML.',
             'xmlFile.file'     => 'El archivo seleccionado no es válido.',
             'xmlFile.mimes'    => 'El archivo debe ser de tipo XML.',
             'xmlFile.max'      => 'El tamaño máximo permitido para el archivo es 5MB.',
+            'medioPagoId.required' => 'Debe seleccionar un medio de pago.',
+            'bancoId.required' => 'Debe seleccionar el banco de origen para el pago.',
+            'bancoId.exists' => 'El banco seleccionado no es válido.',
         ]);
 
         try {
@@ -120,9 +131,9 @@ class UploadXml extends Component
             $inafecto9995Nodes = $xml->xpath('//cac:TaxTotal/cac:TaxSubtotal[cac:TaxCategory/cac:TaxScheme/cbc:ID="9995"]/cbc:TaxableAmount');
             $montoInafecto += !empty($inafecto9995Nodes) ? floatval((string)$inafecto9995Nodes[0]) : 0;
 
-             // El total siempre es el PayableAmount del LegalMonetaryTotal
-             $totalNodes = $xml->xpath('//cac:LegalMonetaryTotal/cbc:PayableAmount');
-             $total = !empty($totalNodes) ? floatval((string)$totalNodes[0]) : 0;
+            // El total siempre es el PayableAmount del LegalMonetaryTotal
+            $totalNodes = $xml->xpath('//cac:LegalMonetaryTotal/cbc:PayableAmount');
+            $total = !empty($totalNodes) ? floatval((string)$totalNodes[0]) : 0;
 
 
             // Log para verificar los datos extraídos
@@ -149,9 +160,9 @@ class UploadXml extends Component
             }
 
             if (empty($proveedorRuc)) {
-                 $this->error = 'No se pudo extraer el RUC del proveedor del XML.';
-                 $this->loading = false;
-                 return;
+                $this->error = 'No se pudo extraer el RUC del proveedor del XML.';
+                $this->loading = false;
+                return;
             }
 
             $proveedor = Proveedor::where('numeroDocumentoIdentidad', $proveedorRuc)->first();
@@ -170,9 +181,9 @@ class UploadXml extends Component
 
             $estadoActivo = Estado::where('descripcion', 'Activo')->first();
             if (!$estadoActivo) {
-                 $this->error = 'Estado "Activo" no encontrado en la base de datos. Por favor, cree el estado.';
-                 $this->loading = false;
-                 return;
+                $this->error = 'Estado "Activo" no encontrado en la base de datos. Por favor, cree el estado.';
+                $this->loading = false;
+                return;
             }
 
             DB::beginTransaction();
@@ -262,25 +273,134 @@ class UploadXml extends Component
                     ]);
                 }
 
+                // ============================================
+                // LLAMADA A LA FUNCIÓN DE CARGO POR PAGAR
+                // ============================================
+                if ($this->medioPagoId == 10) { // 10 = Crédito
+                    $this->generarCargoPorPagar(
+                        $compra,
+                        $proveedor,
+                        $fechaEmision,
+                        $moneda,
+                        $subTotalGravado,
+                        $montoInafecto,
+                        $igvTotal,
+                        $total,
+                        $tipoDocumentoId,
+                        $serie,
+                        $numero,
+                        $estadoActivo
+                    );
+                } else {
+                    // Es CONTADO u OTRO: Genera el Egreso automáticamente
+                    $this->generarEgreso(
+                        $compra,
+                        $moneda,
+                        $total,
+                        $estadoActivo
+                    );
+                }
+                // ============================================
+
                 DB::commit();
-                $this->message = 'Compra registrada exitosamente desde el XML.';
+                $this->message = 'Compra registrada exitosamente desde el XML.' .
+                    ($this->medioPagoId == 10 ? ' Se ha generado el cargo por pagar.' : '');
+
                 $this->reset('xmlFile');
 
                 $this->emit('close-upload-xml-modal');
                 $this->emit('refresh-compras-list');
-
             } catch (\Exception $e) {
                 DB::rollBack();
                 $this->error = 'Error al guardar la compra en la base de datos: ' . $e->getMessage();
                 Log::error('Error al procesar XML y guardar compra: ' . $e->getMessage() . ' en línea ' . $e->getLine());
             }
-
         } catch (\Exception $e) {
             $this->error = 'Error al procesar el archivo XML: ' . $e->getMessage();
             Log::error('Error al cargar/parsear XML: ' . $e->getMessage() . ' en línea ' . $e->getLine());
         } finally {
             $this->loading = false;
         }
+    }
+
+    /**
+     * Genera el registro en la tabla cargoPorPagar cuando la compra es a Crédito.
+     */
+    private function generarCargoPorPagar(
+        Compra $compra,
+        Proveedor $proveedor,
+        string $fechaEmision,
+        string $moneda,
+        float $subTotalGravado,
+        float $montoInafecto,
+        float $igvTotal,
+        float $total,
+        int $tipoDocumentoId,
+        string $serie,
+        string $numero,
+        Estado $estadoActivo
+    ): void {
+        // 1. Obtener días de crédito del proveedor (con fallback a 0 si es null)
+        $diasCredito = $proveedor->diasCredito ?? 0;
+
+        // 2. Calcular fecha de vencimiento
+        $fechaVencimiento = Carbon::parse($fechaEmision)->addDays($diasCredito);
+
+        // 3. Obtener tipo de cambio del día de la emisión
+        $tipoCambioRecord = \App\Models\TipoCambio::whereDate('fechaCambio', Carbon::parse($fechaEmision))->first();
+        $tipoCambio = $tipoCambioRecord ? (float)$tipoCambioRecord->montoCambio : 1.00;
+
+        // 4. Obtener el nombre del tipo de documento
+        $tipoDocumentoNombre = \App\Models\TipoDocumento::find($tipoDocumentoId)->nombre ?? 'Documento';
+
+        // 5. Crear el cargo por pagar
+        \App\Models\CargoPorPagar::create([
+            'idDocumento'         => $compra->id,
+            'idProveedor'         => $proveedor->id,
+            'montoCredito'        => $total,
+            'diasCredito'         => $diasCredito,
+            'fechaEmision'        => Carbon::parse($fechaEmision),
+            'fechaVencimiento'    => $fechaVencimiento,
+            'moneda'              => $moneda,
+            'tarifaNeta'          => $subTotalGravado,
+            'inafecto'            => $montoInafecto,
+            'igv'                 => $igvTotal,
+            'otrosImpuestos'      => 0.00,
+            'total'               => $total,
+            'tipoDocumento'       => $tipoDocumentoNombre,
+            'serieDocumento'      => $serie,
+            'numeroDocumento'     => $numero,
+            'montoCargo'          => $total, // El monto del cargo inicial es el total
+            'tipoCambio'          => $tipoCambio,
+            'saldo'               => $total, // El saldo pendiente inicial es el total
+            'idEstado'            => $estadoActivo->id,
+            'usuarioCreacion'     => auth()->id(),
+            'usuarioModificacion' => auth()->id(),
+        ]);
+
+        Log::info("Cargo por pagar generado exitosamente para la compra ID: " . $compra->id);
+    }
+
+    /**
+     * Genera el registro en la tabla egresos cuando la compra NO es a Crédito.
+     */
+    private function generarEgreso(
+        Compra $compra,
+        string $moneda,
+        float $total,
+        Estado $estadoActivo
+    ): void {
+        \App\Models\Egreso::create([
+            'idBanco'             => $this->bancoId,
+            'moneda'              => $moneda,
+            'monto'               => $total,
+            'idDocumento'         => $compra->id,
+            'idEstado'            => $estadoActivo->id,
+            'idUsuarioCreacion'   => auth()->id(),
+            'idUsuarioModificacion' => auth()->id(),
+        ]);
+
+        Log::info("Egreso generado exitosamente para la compra ID: " . $compra->id . " desde el banco ID: " . $this->bancoId);
     }
 
     public function render()

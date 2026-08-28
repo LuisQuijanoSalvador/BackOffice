@@ -314,7 +314,7 @@ class CreateCompra extends Component
         } catch (\Exception $e) {
             DB::rollBack();
             session()->flash('error', 'Hubo un error al registrar la compra: ' . $e->getMessage());
-            \Log::error('Error al registrar compra: ' . $e->getMessage());
+            Log::error('Error al registrar compra: ' . $e->getMessage());
         }
     }
 

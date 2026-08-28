@@ -107,6 +107,24 @@ Route::middleware(['auth'])->group(function () {
         })->name('reportes.cuentas-por-cobrar')->middleware('auth');
     });
 
+    Route::group(['prefix' => 'cuentaporpagar'], function () {
+        Route::get('cargos', function () {
+            return view('cuentas-por-pagar.lista-cargos');
+        })->name('rListaCargos');
+        Route::get('/cuentas-por-pagar/pago/{cargoId}', function ($cargoId) {
+            return view('cuentas-por-pagar.pago-cargo', compact('cargoId'));
+        })->name('cuentas-por-pagar.pago');
+        Route::get('/abonos', function () {
+            return view('cuentas-por-pagar.abono-list');
+        })->name('abonos.index');
+        Route::get('/abonos/{abonoId}', function ($abonoId) {
+            return view('cuentas-por-pagar.abono-detail', compact('abonoId'));
+        })->name('abonos.detalle');
+        Route::get('/egresos', function () {
+            return view('cuentas-por-pagar.egreso-list');
+        })->name('egresos.index');
+    });
+
     Route::group(['prefix' => 'compras'], function () {
         Route::get('compras', function () {
             return view('compras.compra');
@@ -256,4 +274,3 @@ Route::middleware(['auth'])->group(function () {
         })->name('rIntegrador');
     });
 });
-

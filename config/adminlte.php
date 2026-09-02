@@ -612,6 +612,12 @@ return [
             ]
         ],
         [
+            'text'        => 'Conciliacion',
+            'route'         => 'conciliacion-tarjetas.index',
+            'icon'        => 'fas fa-credit-card',
+
+        ],
+        [
             'text'        => 'Contabilidad',
             'route'         => 'rIntegrador',
             'icon'        => 'fas fa-book',

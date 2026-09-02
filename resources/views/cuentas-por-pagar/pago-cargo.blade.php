@@ -9,7 +9,7 @@
 {{-- Inicio del contenido de la Página --}}
 @section('content')
     {{-- Pasamos el $cargoId al componente Livewire --}}
-    @livewire('cuentas-por-pagar.pago-cargo-por-pagar', ['cargoId' => $cargoId])
+    @livewire('cuentas-por-pagar.pago-cargo-por-pagar', ['cargos' => $cargosIds])
 @stop
 {{-- Fin del contenido de la Página --}}
 

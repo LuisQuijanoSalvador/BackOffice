@@ -10,6 +10,7 @@ use App\Http\Controllers\AbonoController;
 use App\Http\Livewire\Compras\ReporteComprasPorFecha;
 use App\Http\Livewire\CuentasPorCobrarReport;
 use App\Http\Controllers\ReportesController;
+use Illuminate\Http\Request;
 
 
 /*
@@ -111,8 +112,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('cargos', function () {
             return view('cuentas-por-pagar.lista-cargos');
         })->name('rListaCargos');
-        Route::get('/cuentas-por-pagar/pago/{cargoId}', function ($cargoId) {
-            return view('cuentas-por-pagar.pago-cargo', compact('cargoId'));
+        Route::get('/cuentas-por-pagar/pago', function (Request $request) {
+            // Obtenemos los IDs desde el query string (ej: ?cargos=1,2,3)
+            $cargosIds = $request->query('cargos', '');
+            return view('cuentas-por-pagar.pago-cargo', compact('cargosIds'));
         })->name('cuentas-por-pagar.pago');
         Route::get('/abonos', function () {
             return view('cuentas-por-pagar.abono-list');
@@ -123,6 +126,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/egresos', function () {
             return view('cuentas-por-pagar.egreso-list');
         })->name('egresos.index');
+        Route::get('/cuentas-por-pagar/crear', function () {
+            return view('cuentas-por-pagar.crear');
+        })->name('cuentas-por-pagar.crear');
+    });
+
+    Route::group(['prefix' => 'conciliacion'], function () {
+        // Conciliación de Tarjetas de Crédito
+        Route::get('conciliacion-tarjetas', function () {
+            return view('conciliacion.conciliacion');
+        })->name('conciliacion-tarjetas.index');
     });
 
     Route::group(['prefix' => 'compras'], function () {

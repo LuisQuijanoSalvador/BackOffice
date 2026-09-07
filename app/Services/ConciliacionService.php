@@ -35,10 +35,10 @@ class ConciliacionService
                 'tipo_servicio' => null,
             ];
 
-            // Buscar en boletos - SIN filtrar por moneda
+            // Buscar en boletos comparando con totalOrigen (Costo real sin margen)
             $boleto = Boleto::where('cod4', $lastFourDigits)
                 ->whereBetween('fechaEmision', [$fechaInicio, $fechaFin])
-                ->where('total', $movement['monto'])
+                ->where('totalOrigen', $movement['monto'])
                 ->first();
 
             if ($boleto) {
@@ -52,10 +52,10 @@ class ConciliacionService
                 $result['serie_documento'] = $documento ? $documento->serie : 'N/A';
                 $result['numero_documento'] = $documento ? $documento->numero : 'N/A';
             } else {
-                // Buscar en servicios - SIN filtrar por moneda
+                // Buscar en servicios comparando con totalOrigen (Costo real sin margen)
                 $servicio = Servicio::where('cod4', $lastFourDigits)
                     ->whereBetween('fechaEmision', [$fechaInicio, $fechaFin])
-                    ->where('total', $movement['monto'])
+                    ->where('totalOrigen', $movement['monto'])
                     ->first();
 
                 if ($servicio) {

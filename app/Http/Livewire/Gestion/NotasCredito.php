@@ -20,7 +20,7 @@ class NotasCredito extends Component
     public $idTipoDocumento=1,$fechaEmision,$tipoCambio=0,$numeroDocumento,$glosa,$motivo=1,$monto=0,
             $monedaLetra, $tipoDocuRefe, $numeroRefe, $codMotivo, $descMotivo, $fechaRefe,
             $metodo_pago, $codigo_metodopago, $desc_metodopago,$codigoDocumentoIdentidad,$descDocumentoIdentidad,
-            $numeroTelefono, $descripcion, $documento;
+            $numeroTelefono, $descripcion, $documento, $tipoDocumentoIdentidad, $fechaReserva, $respSenda;
     protected $documentos;
 
     public function updatedfechaEmision($fechaEmision){
@@ -127,7 +127,7 @@ class NotasCredito extends Component
             $documento->inafecto = $this->documento->inafecto;
             $documento->exonerado = 0;
             $documento->igv = $this->documento->igv;
-            $documento->otrosImpuestos = 0;
+            $documento->otrosImpuestos = $this->documento->otrosImpuestos;
             $documento->total = $this->monto;
             // $documento->total = $this->documento->total;
         }else{
@@ -135,7 +135,7 @@ class NotasCredito extends Component
             $documento->inafecto = $this->documento->inafecto;
             $documento->exonerado = 0;
             $documento->igv = $this->monto - $documento->afecto;
-            $documento->otrosImpuestos = 0;
+            $documento->otrosImpuestos = $this->documento->otrosImpuestos;
             $documento->total = $this->monto;
         }
         //---

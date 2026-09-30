@@ -68,6 +68,9 @@
                         IGV
                     </th>
                     <th scope="col" class="py-1">
+                        Otros Imp.
+                    </th>
+                    <th scope="col" class="py-1">
                         Total
                     </th>
                     <th scope="col" class="py-1">
@@ -87,6 +90,7 @@
                             <td class="py-1">{{$documento->afecto}}</td>
                             <td class="py-1">{{$documento->inafecto}}</td>
                             <td class="py-1">{{$documento->igv}}</td>
+                            <td class="py-1">{{$documento->otrosImpuestos}}</td>
                             <td class="py-1">{{$documento->total}}</td>
                             <td class="py-1">{{$documento->tEstado->descripcion}}</td>
                         </tr>

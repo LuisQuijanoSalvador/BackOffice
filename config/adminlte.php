@@ -503,6 +503,10 @@ return [
                     'route' => 'listaTipoCambio'
                 ],
                 [
+                    'text' => 'Cuentas Contables',
+                    'route' => 'cuentas-contables.index'
+                ],
+                [
                     'text' => 'Estados',
                     'route' => 'listaEstados'
                 ],

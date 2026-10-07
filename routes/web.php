@@ -191,6 +191,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::group(['prefix' => 'tablas'], function () {
+        Route::get('cuentacontable', function () {
+            return view('contabilidad.cuentas-contables');
+        })->name('cuentas-contables.index');
         Route::get('estados', function () {
             return view('tablas.estados');
         })->name('listaEstados');

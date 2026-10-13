@@ -507,7 +507,7 @@ return [
                     'route' => 'cuentas-contables.index'
                 ],
                 [
-                    'text' => 'Sudiarios',
+                    'text' => 'Subdiarios',
                     'route' => 'subdiarios.index'
                 ],
                 [

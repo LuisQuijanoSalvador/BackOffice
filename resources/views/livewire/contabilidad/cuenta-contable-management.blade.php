@@ -41,7 +41,7 @@
                                 <th>Descripción</th>
                                 <th>Estado</th>
                                 <th>Creado por</th>
-                                <th style="width: 100px" class="text-center">Acciones</th>
+                                <th style="width: 100px" class="text-center" colspan="2">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -62,8 +62,9 @@
                                             title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </button>
-                                        <button wire:click="delete({{ $cuenta->id }})"
-                                            wire:confirm="¿Estás seguro de eliminar esta cuenta contable?"
+                                    </td>
+                                    <td class="text-center">
+                                        <button wire:click="confirmDelete({{ $cuenta->id }})"
                                             class="btn btn-xs btn-danger" title="Eliminar">
                                             <i class="fas fa-trash"></i>
                                         </button>
@@ -86,6 +87,7 @@
         </div>
 
         {{-- MODAL DE CREAR / EDITAR (Bootstrap 4) --}}
+        {{-- MODAL DE CREAR / EDITAR (Bootstrap 4) --}}
         <div wire:ignore.self class="modal fade" id="cuentaModal" tabindex="-1" role="dialog"
             aria-labelledby="cuentaModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -104,7 +106,7 @@
                             <div class="form-group">
                                 <label for="cuenta" class="font-weight-bold">Número de Cuenta <span
                                         class="text-danger">*</span></label>
-                                <input type="text" id="cuenta" wire:model="cuenta"
+                                <input type="text" id="cuenta" name="cuenta" wire:model="cuenta"
                                     class="form-control @error('cuenta') is-invalid @enderror"
                                     placeholder="Ej: 40111001">
                                 @error('cuenta')
@@ -114,7 +116,7 @@
                             <div class="form-group">
                                 <label for="descripcion" class="font-weight-bold">Descripción <span
                                         class="text-danger">*</span></label>
-                                <input type="text" id="descripcion" wire:model="descripcion"
+                                <input type="text" id="descripcion" name="descripcion" wire:model="descripcion"
                                     class="form-control @error('descripcion') is-invalid @enderror"
                                     placeholder="Ej: Tributos por pagar - IGV">
                                 @error('descripcion')
@@ -129,6 +131,36 @@
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- MODAL DE CONFIRMACIÓN DE ELIMINAR --}}
+        <div wire:ignore.self class="modal fade" id="deleteModal" tabindex="-1" role="dialog"
+            aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="deleteModalLabel">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> Confirmar Eliminación
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">¿Estás seguro de que deseas eliminar esta cuenta contable? Esta acción no se
+                            puede deshacer.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="cancelDelete"
+                            data-dismiss="modal">
+                            <i class="fas fa-times mr-1"></i> Cancelar
+                        </button>
+                        <button type="button" class="btn btn-danger" wire:click="delete">
+                            <i class="fas fa-trash mr-1"></i> Sí, Eliminar
+                        </button>
                     </div>
                 </div>
             </div>

@@ -29,6 +29,8 @@ class Compra extends Model
         'estado',
         'usuarioCreacion',
         'usuarioModificacion',
+        'idCuentaContable',
+        'idSubdiario',
     ];
 
     // **AÑADE ESTA LÍNEA** o modifica si ya tienes la propiedad $casts
@@ -69,5 +71,13 @@ class Compra extends Model
     public function detalles()
     {
         return $this->hasMany(CompraDetalle::class, 'idCompra');
+    }
+    public function cuentaContable()
+    {
+        return $this->belongsTo(CuentaContable::class, 'idCuentaContable');
+    }
+    public function subdiario()
+    {
+        return $this->belongsTo(Subdiario::class, 'idSubdiario');
     }
 }

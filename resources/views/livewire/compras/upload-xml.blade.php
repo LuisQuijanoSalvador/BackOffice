@@ -88,9 +88,47 @@
                 @endif
             </div>
 
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="idCuentaContable" class="font-weight-bold">Cuenta Contable <span
+                                class="text-danger">*</span></label>
+                        <select id="idCuentaContable" wire:model="idCuentaContable"
+                            class="form-control @error('idCuentaContable') is-invalid @enderror">
+                            <option value="">Seleccione Cuenta</option>
+                            @foreach ($cuentasContables as $cuenta)
+                                <option value="{{ $cuenta->id }}">{{ $cuenta->cuenta }} -
+                                    {{ $cuenta->descripcion }}</option>
+                            @endforeach
+                        </select>
+                        @error('idCuentaContable')
+                            <span class="text-danger small">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="idSubdiario" class="font-weight-bold">Subdiario <span
+                                class="text-danger">*</span></label>
+                        <select id="idSubdiario" wire:model="idSubdiario"
+                            class="form-control @error('idSubdiario') is-invalid @enderror">
+                            <option value="">Seleccione Subdiario</option>
+                            @foreach ($subdiarios as $subdiario)
+                                <option value="{{ $subdiario->id }}">{{ $subdiario->codigo }} -
+                                    {{ $subdiario->descripcion }}</option>
+                            @endforeach
+                        </select>
+                        @error('idSubdiario')
+                            <span class="text-danger small">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+            
             {{-- Botón de envío --}}
             <div class="d-flex justify-content-end mt-3">
-                <button type="submit" class="btn btn-primary" @if($loading || !$xmlFile || empty($medioPagoId) || ($medioPagoId != 10 && empty($bancoId))) disabled @endif>
+                <button type="submit" class="btn btn-primary" @if ($loading || !$xmlFile || empty($medioPagoId) || ($medioPagoId != 10 && empty($bancoId))) disabled @endif>
                     @if ($loading)
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                         Procesando...

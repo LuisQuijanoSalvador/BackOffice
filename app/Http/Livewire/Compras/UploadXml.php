@@ -10,6 +10,8 @@ use App\Models\Compra;
 use App\Models\CompraDetalle;
 use App\Models\Estado;
 use App\Models\MedioPago;
+use App\Models\CuentaContable;
+use App\Models\Subdiario;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use SimpleXMLElement;
@@ -26,6 +28,10 @@ class UploadXml extends Component
     public $mediosPago = [];
     public $bancoId = '';
     public $bancos = [];
+    public $cuentasContables = [];
+    public $subdiarios = [];
+    public $idCuentaContable = '';
+    public $idSubdiario = '';
 
     protected $documentTypeMap = [
         '01' => 1, // Ejemplo: Factura
@@ -40,6 +46,8 @@ class UploadXml extends Component
         $this->tasaIGV = config('taxes.igv_rate', 0.18);
         $this->mediosPago = MedioPago::orderBy('descripcion')->get();
         $this->bancos = \App\Models\Banco::where('idEstado', 1)->orderBy('nombre')->get(); // Ajusta el filtro de estado si tu tabla usa otro campo
+        $this->cuentasContables = CuentaContable::where('idEstado', 1)->orderBy('cuenta')->get();
+        $this->subdiarios = Subdiario::where('idEstado', 1)->orderBy('codigo')->get();
     }
 
     public function processXml()
@@ -50,6 +58,8 @@ class UploadXml extends Component
         $this->validate([
             'xmlFile' => 'required|file|mimes:xml|max:5120',
             'medioPagoId' => 'required',
+            'idCuentaContable' => 'required|exists:cuenta_contables,id',
+            'idSubdiario' => 'required|exists:subdiarios,id',
             'bancoId' => $this->medioPagoId != 10 ? 'required|exists:bancos,id' : 'nullable', // Condicional
         ], [
             'xmlFile.required' => 'Debe seleccionar un archivo XML.',
@@ -206,6 +216,8 @@ class UploadXml extends Component
                     'totalLetras'      => '',
                     'observacion'      => 'Registrada desde XML. Emisor: ' . $proveedorRazonSocial,
                     'estado'           => $estadoActivo->id,
+                    'idCuentaContable' => $this->idCuentaContable,
+                    'idSubdiario'      => $this->idSubdiario,
                     'usuarioCreacion'  => auth()->id(),
                     'usuarioModificacion' => auth()->id(),
                 ]);

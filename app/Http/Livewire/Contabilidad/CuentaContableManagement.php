@@ -10,7 +10,7 @@ use App\Models\Estado;
 class CuentaContableManagement extends Component
 {
     use WithPagination;
-
+    public $deleteId;
     public $cuentaId;
     public $cuenta;
     public $descripcion;
@@ -66,7 +66,7 @@ class CuentaContableManagement extends Component
     public function store()
     {
         $this->validate([
-            'cuenta' => 'required|string|max:20|unique:cuentas_contables,cuenta,' . $this->cuentaId,
+            'cuenta' => 'required|string|max:20|unique:cuenta_contables,cuenta,' . $this->cuentaId,
             'descripcion' => 'required|string|max:255',
         ]);
 
@@ -87,14 +87,29 @@ class CuentaContableManagement extends Component
         $this->closeModal();
         $this->resetInputFields();
     }
-
-    public function delete($id)
+    // Método para abrir el modal de confirmación
+    public function confirmDelete($id)
     {
-        // En contabilidad, es mejor no borrar físicamente si ya se usó, 
-        // pero si es mantenimiento puro, podemos cambiar el estado a "Inactivo" o borrar.
-        // Aquí lo dejaremos preparado para borrar, pero puedes cambiarlo a cambiar estado.
-        CuentaContable::find($id)->delete();
-        session()->flash('message', 'Cuenta eliminada exitosamente.');
+        $this->deleteId = $id;
+        $this->dispatchBrowserEvent('open-delete-modal');
+    }
+
+    // Método para cancelar y cerrar el modal
+    public function cancelDelete()
+    {
+        $this->deleteId = null;
+        $this->dispatchBrowserEvent('close-delete-modal');
+    }
+
+    public function delete()
+    {
+        if ($this->deleteId) {
+            CuentaContable::find($this->deleteId)->delete();
+            session()->flash('message', 'Cuenta eliminada exitosamente.');
+            
+            $this->deleteId = null;
+            $this->dispatchBrowserEvent('close-delete-modal');
+        }
     }
 
     public function render()

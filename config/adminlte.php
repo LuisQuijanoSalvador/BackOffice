@@ -507,6 +507,10 @@ return [
                     'route' => 'cuentas-contables.index'
                 ],
                 [
+                    'text' => 'Sudiarios',
+                    'route' => 'subdiarios.index'
+                ],
+                [
                     'text' => 'Estados',
                     'route' => 'listaEstados'
                 ],

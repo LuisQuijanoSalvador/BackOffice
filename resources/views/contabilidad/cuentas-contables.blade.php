@@ -16,11 +16,21 @@
 @section('js')
     {{-- Script necesario para que los Modals de Bootstrap 4 funcionen perfectamente con Livewire 2 --}}
     <script>
-        window.livewire.on('open-modal', () => {
+        // Escuchar el evento nativo del navegador disparado por dispatchBrowserEvent
+        window.addEventListener('open-modal', () => {
             $('#cuentaModal').modal('show');
         });
-        window.livewire.on('close-modal', () => {
+
+        window.addEventListener('close-modal', () => {
             $('#cuentaModal').modal('hide');
+        });
+        
+        // Eventos para el Modal de Eliminar
+        window.addEventListener('open-delete-modal', () => {
+            $('#deleteModal').modal('show');
+        });
+        window.addEventListener('close-delete-modal', () => {
+            $('#deleteModal').modal('hide');
         });
     </script>
 @stop

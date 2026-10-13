@@ -288,5 +288,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('integrador', function () {
             return view('contabilidad.integrador');
         })->name('rIntegrador');
+        Route::get('/subdiarios', function () {
+            return view('contabilidad.subdiario');
+        })->name('subdiarios.index');
     });
 });

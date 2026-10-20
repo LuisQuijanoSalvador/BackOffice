@@ -131,10 +131,10 @@ class NotasCredito extends Component
             $documento->total = $this->monto;
             // $documento->total = $this->documento->total;
         }else{
-            $documento->afecto = round($this->monto / 1.18, 2);
+            $documento->afecto = $this->documento->afecto; //round($this->documento->afecto / 1.18, 2);
             $documento->inafecto = $this->documento->inafecto;
             $documento->exonerado = 0;
-            $documento->igv = $this->monto - $documento->afecto;
+            $documento->igv = round($this->documento->afecto * 0.18, 2);
             $documento->otrosImpuestos = $this->documento->otrosImpuestos;
             $documento->total = $this->monto;
         }

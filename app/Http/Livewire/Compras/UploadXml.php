@@ -145,6 +145,35 @@ class UploadXml extends Component
             $totalNodes = $xml->xpath('//cac:LegalMonetaryTotal/cbc:PayableAmount');
             $total = !empty($totalNodes) ? floatval((string)$totalNodes[0]) : 0;
 
+            // --- Extracción de Datos de Detracción ---
+            $montoDetraccion = 0;
+            $porcentajeDetraccion = 0;
+            $medioPagoDetraccion = '';
+
+            // Buscar el bloque PaymentTerms con ID = "Detraccion"
+            $paymentTermsNodes = $xml->xpath('//cac:PaymentTerms[cbc:ID="Detraccion"]');
+
+            if (!empty($paymentTermsNodes)) {
+                $paymentTerms = $paymentTermsNodes[0];
+
+                // Extraer el monto de la detracción
+                $montoDetraccionNodes = $paymentTerms->xpath('.//cbc:Amount');
+                $montoDetraccion = !empty($montoDetraccionNodes) ? floatval((string)$montoDetraccionNodes[0]) : 0;
+
+                // Extraer el porcentaje de detracción (opcional, útil para validaciones)
+                $porcentajeNodes = $paymentTerms->xpath('.//cbc:PaymentPercent');
+                $porcentajeDetraccion = !empty($porcentajeNodes) ? floatval((string)$porcentajeNodes[0]) : 0;
+
+                // Extraer el medio de pago de la detracción (opcional)
+                $medioPagoNodes = $paymentTerms->xpath('.//cbc:PaymentMeansID');
+                $medioPagoDetraccion = !empty($medioPagoNodes) ? (string)$medioPagoNodes[0] : '';
+            }
+
+            Log::info("Detracción Extraída: " . json_encode([
+                'montoDetraccion' => $montoDetraccion,
+                'porcentajeDetraccion' => $porcentajeDetraccion,
+                'medioPagoDetraccion' => $medioPagoDetraccion,
+            ]));
 
             // Log para verificar los datos extraídos
             Log::info("XML Data Extracted: " . json_encode([
@@ -211,6 +240,7 @@ class UploadXml extends Component
                     'moneda'           => $moneda,
                     'subTotal'         => $subTotalGravado, // Monto Gravado
                     'igv'              => $igvTotal,        // IGV Total
+                    'montoDetraccion'  => $montoDetraccion,
                     'inafecto'         => $montoInafecto,    // Nuevo campo para Inafecto
                     'total'            => $total,            // Total General
                     'totalLetras'      => '',

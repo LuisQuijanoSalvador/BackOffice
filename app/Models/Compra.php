@@ -22,6 +22,7 @@ class Compra extends Model
         'subTotal',
         'inafecto',
         'igv',
+        'montoDetraccion',
         'total',
         'totalLetras',
         'observacion',

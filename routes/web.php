@@ -291,5 +291,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/subdiarios', function () {
             return view('contabilidad.subdiario');
         })->name('subdiarios.index');
+        Route::get('/contabilidad/generar-asiento-compras', function () {
+            return view('contabilidad.generar-asiento');
+        })->name('contabilidad.generar-asiento-compras');
     });
 });

@@ -627,12 +627,19 @@ return [
         ],
         [
             'text'        => 'Contabilidad',
-            'route'         => 'rIntegrador',
+            'url'         => 'admin/pages',
             'icon'        => 'fas fa-book',
-
+            'submenu' => [
+                [
+                    'text' => 'Integrador Ventas',
+                    'route' => 'rIntegrador'
+                ],
+                [
+                    'text' => 'Integrador Compras',
+                    'route' => 'contabilidad.generar-asiento-compras'
+                ]
+            ]
         ],
-
-
 
 
         // ['header' => 'account_settings'],
